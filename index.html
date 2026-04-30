@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>自建物流商 产品方案 v1.1</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #2c3e50;
+    background: #f5f7fa;
+    display: flex;
+  }
+  /* 左侧导航 */
+  .sidebar {
+    width: 280px;
+    height: 100vh;
+    background: #1f2937;
+    color: #d1d5db;
+    overflow-y: auto;
+    position: fixed;
+    left: 0; top: 0;
+    padding: 20px 0;
+    box-shadow: 2px 0 8px rgba(0,0,0,0.08);
+  }
+  .sidebar-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 0 20px 16px;
+    border-bottom: 1px solid #374151;
+    margin-bottom: 12px;
+  }
+  .sidebar-version {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+    font-weight: 400;
+  }
+  .sidebar ul { list-style: none; }
+  .sidebar a {
+    display: block;
+    color: #d1d5db;
+    text-decoration: none;
+    padding: 8px 20px;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .sidebar a:hover {
+    background: #374151;
+    color: #fff;
+    border-left-color: #3b82f6;
+  }
+  .sidebar a.sub {
+    padding-left: 36px;
+    font-size: 12.5px;
+    color: #9ca3af;
+  }
+  .sidebar a.sub-sub {
+    padding-left: 52px;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  /* 主内容区 */
+  .main {
+    margin-left: 280px;
+    flex: 1;
+    padding: 40px 60px;
+    max-width: calc(100% - 280px);
+  }
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 48px 56px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  }
+  /* 头部 */
+  .doc-header {
+    border-bottom: 2px solid #e5e7eb;
+    padding-bottom: 24px;
+    margin-bottom: 32px;
+  }
+  .doc-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 12px;
+  }
+  .doc-meta {
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.9;
+  }
+  .doc-meta span { margin-right: 24px; }
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    background: #dbeafe;
+    color: #1e40af;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+  /* 章节 */
+  h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 40px 0 20px;
+    padding: 12px 16px;
+    background: linear-gradient(90deg, #eff6ff 0%, transparent 100%);
+    border-left: 4px solid #3b82f6;
+    border-radius: 4px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 28px 0 14px;
+    padding-left: 10px;
+    border-left: 3px solid #60a5fa;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    margin: 20px 0 10px;
+  }
+  p { margin: 10px 0; }
+  ul, ol { margin: 10px 0 10px 24px; }
+  li { margin: 4px 0; }
+  strong { color: #111827; font-weight: 600; }
+  code {
+    background: #f3f4f6;
+    color: #db2777;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "JetBrains Mono", "Cascadia Code", Consolas, Monaco, monospace;
+    font-size: 12.5px;
+  }
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  thead { background: #3b82f6; color: #fff; }
+  th { padding: 10px 14px; text-align: left; font-weight: 500; }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: #f9fafb; }
+  tbody tr:hover { background: #eff6ff; }
+  /* 引用块 */
+  blockquote {
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    border-radius: 4px;
+    color: #78350f;
+    font-size: 13px;
+  }
+  blockquote.info {
+    background: #dbeafe;
+    border-left-color: #3b82f6;
+    color: #1e3a8a;
+  }
+  /* 代码块 */
+  pre {
+    background: #1f2937;
+    color: #e5e7eb;
+    padding: 16px 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 14px 0;
+    font-family: "JetBrains Mono", Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+  /* 流程图容器 */
+  .flow-card {
+    margin: 20px 0;
+    padding: 24px;
+    background: #fafbfc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+  }
+  .flow-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #cbd5e1;
+    display: flex;
+    align-items: center;
+  }
+  .flow-card-title::before {
+    content: "📊";
+    margin-right: 8px;
+  }
+  .mermaid {
+    text-align: center;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  /* 变更标识 */
+  .change-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .change-tag.new {
+    background: #d1fae5;
+    color: #065f46;
+  }
+  /* 提示框 */
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+    font-size: 13px;
+    border: 1px solid;
+  }
+  .alert-warn {
+    background: #fffbeb;
+    border-color: #fcd34d;
+    color: #92400e;
+  }
+  .alert-info {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1e40af;
+  }
+  /* 锚点偏移 */
+  section { scroll-margin-top: 24px; }
+  /* 目录页底部 */
+  .footer {
+    text-align: center;
+    color: #9ca3af;
+    font-size: 12px;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+  }
+</style>
+</head>
+<body>
+
+<nav class="sidebar">
+  <div class="sidebar-title">
+    自建物流商 产品方案
+    <div class="sidebar-version">v1.1 · 2026-04-29</div>
+  </div>
+  <ul>
+    <li><a href="#changelog">📌 版本变更（v1.0→v1.1）</a></li>
+    <li><a href="#section-1">一、业务背景</a></li>
+    <li><a href="#section-2">二、本期需求范围</a></li>
+    <li><a href="#section-3">三、术语与核心概念</a></li>
+    <li><a href="#sec-3-1" class="sub">3.1 术语表</a></li>
+    <li><a href="#sec-3-2" class="sub">3.2 自建跟踪号命名规则</a></li>
+    <li><a href="#section-4">四、核心流程</a></li>
+    <li><a href="#sec-4-1" class="sub">4.1 订单分配自建物流</a></li>
+    <li><a href="#sec-4-2" class="sub">4.2 仓库出库</a></li>
+    <li><a href="#sec-4-3" class="sub">4.3 销售平台回传</a></li>
+    <li><a href="#sec-4-4" class="sub">4.4 轨迹定时拉取</a></li>
+    <li><a href="#sec-4-5" class="sub">4.5 客户查询轨迹</a></li>
+    <li><a href="#sec-4-6" class="sub">4.6 订单取消</a></li>
+    <li><a href="#sec-4-7" class="sub">4.7 异常兜底</a></li>
+    <li><a href="#sec-4-8" class="sub">4.8 仓库实操注意事项</a></li>
+    <li><a href="#section-5">五、数据模型变更</a></li>
+    <li><a href="#section-6">六、规则引擎扩展</a></li>
+    <li><a href="#section-7">七、节点时效预警对接</a></li>
+    <li><a href="#section-8">八、影响范围与改动清单</a></li>
+    <li><a href="#section-9">九、上线计划与回滚</a></li>
+    <li><a href="#section-10">十、关键风险与对策</a></li>
+    <li><a href="#section-appendix">附：核心代码参考点</a></li>
+  </ul>
+</nav>
+
+<main class="main">
+<div class="container">
+
+<header class="doc-header">
+  <h1>自建物流商 产品方案 <span class="badge">v1.1</span></h1>
+  <div class="doc-meta">
+    <span>📅 创建时间：2026-04-28（v1.0）</span>
+    <span>🔄 修订时间：2026-04-29（v1.1）</span>
+    <span>👤 作者：产品 / 张洪琼</span>
+  </div>
+</header>
+
+<!-- 版本变更 -->
+<section id="changelog">
+  <h2>📌 版本变更（v1.0 → v1.1）</h2>
+  <table>
+    <thead><tr><th width="40%">变更点</th><th width="30%">来源</th><th width="30%">影响章节</th></tr></thead>
+    <tbody>
+      <tr><td>自建跟踪号命名规则<strong>重新设计</strong>：放弃 v1.0 的"<code>SL</code>+站点码+时间戳+校验位 18 位"方案，改为 <strong>品牌前缀 + 平台订单号 + 后缀</strong> 的可读规则</td><td>业务方明确诉求："跟踪号要让客户/客服一眼看出归属"</td><td>三、四、五、十</td></tr>
+      <tr><td>待定项 #3"站点码具体含义"作废（新规则不再使用站点码）</td><td>命名规则改造</td><td>十</td></tr>
+      <tr><td>数据模型 5.2 字段长度调整：<code>self_built_tracking_no</code> 由 varchar(20) 扩到 varchar(50)</td><td>新规则长度可达 ~45 位</td><td>五</td></tr>
+      <tr><td>新增风险条目：跟踪号长度可能触达销售平台 tracking number 字段上限</td><td>新规则量化分析</td><td>十一</td></tr>
+      <tr><td>新增<strong>待定项</strong>：销售平台回传时 carrier name 是否需按品牌差异化（VIVAIA 店 vs FANKA 店）</td><td>跟踪号已按品牌分流，carrier name 是否同步差异化是新问题</td><td>十</td></tr>
+      <tr><td><span class="change-tag">v1.1 二轮</span>修订"仓库零改动"结论 → "仓库轻量改动"，新增 §4.8 仓库实操注意事项专章</td><td>业务方提示：核重发货、快速换单两个仓库实操场景未在 v1.0 中覆盖；代码核查发现 3 处冲突点</td><td>四、五、八、十一</td></tr>
+      <tr><td><span class="change-tag">v1.1 二轮</span>数据模型 5.2 增加 <code>provider_tracking_no</code> 与 <code>package.trackingNumber</code> 的存储约定</td><td>兼容核重发货校验逻辑</td><td>五</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 一、业务背景 -->
+<section id="section-1">
+  <h2>一、业务背景</h2>
+  <p>公司当前已对外宣称"自建物流"作为统一物流品牌，但实际履约由第三方"易抵达"承担：</p>
+  <ul>
+    <li><strong>头程</strong>：易抵达派单给某第三方头程物流商承运（具体哪家由易抵达自行决定）</li>
+    <li><strong>尾程</strong>：易抵达本地派送</li>
+    <li><strong>轨迹</strong>：易抵达将头程 + 尾程整合成一条完整轨迹回传 ERP</li>
+  </ul>
+  <p>本方案的目标：在 ERP 系统中正式建立"自建物流"虚拟物流商，<strong>对外</strong>用 ERP 自己生成的跟踪号承载完整客户体验，<strong>对内</strong>与易抵达运单号建立映射，借助易抵达完成实际履约。</p>
+
+  <div class="flow-card">
+    <div class="flow-card-title">业务关系全景图</div>
+    <div class="mermaid">
+flowchart LR
+  Customer[👤 客户] -->|查询轨迹| Track[track.vivaia.com]
+  Customer -->|看到的<br/>跟踪号| Platform[销售平台<br/>GALAXY/Shopify]
+  Platform -->|回传 carrier=自建物流<br/>tracking=自建跟踪号| ERP
+  ERP[ERP 系统<br/>自建物流虚拟商] -->|对内映射| Yidida[易抵达<br/>第三方履约]
+  Yidida -->|头程| H[头程物流商]
+  Yidida -->|尾程| T[本地派送]
+  Yidida -->|完整轨迹| ERP
+  ERP --> Track
+  style Customer fill:#fef3c7,stroke:#f59e0b
+  style ERP fill:#dbeafe,stroke:#3b82f6
+  style Yidida fill:#e0e7ff,stroke:#6366f1
+  style Platform fill:#fce7f3,stroke:#ec4899
+    </div>
+  </div>
+</section>
+
+<!-- 二、本期需求范围 -->
+<section id="section-2">
+  <h2>二、本期需求范围</h2>
+  <table>
+    <thead><tr><th>维度</th><th>范围</th></tr></thead>
+    <tbody>
+      <tr><td>销售渠道</td><td><strong>GALAXY 国际站、Shopify</strong>（其他渠道，如 TikTok，不在本期）</td></tr>
+      <tr><td>发货仓</td><td><strong>东莞仓</strong>（其他仓不在本期）</td></tr>
+      <tr><td>订单范围</td><td><strong>新订单</strong>（上线后创建的订单），按规则引擎匹配命中后才走自建物流</td></tr>
+      <tr><td>不在范围</td><td>老订单不动；老订单原物流方案继续走完履约</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 三、术语与核心概念 -->
+<section id="section-3">
+  <h2>三、术语与核心概念</h2>
+
+  <div id="sec-3-1">
+  <h3>3.1 术语表</h3>
+  <table>
+    <thead><tr><th width="22%">术语</th><th>含义</th></tr></thead>
+    <tbody>
+      <tr><td><strong>自建物流商</strong></td><td>ERP 中新增的虚拟物流商，对外品牌承载体；不对应任何真实承运资源</td></tr>
+      <tr><td><strong>自建跟踪号</strong></td><td>ERP 自己生成、对外展示给客户和销售平台的跟踪号；规则见 3.2</td></tr>
+      <tr><td><strong>易抵达运单号</strong></td><td>易抵达 API 回给 ERP 的内部运单号；面单上印的就是这个号；ERP 内部用，不对外</td></tr>
+      <tr><td><strong>面单</strong></td><td>易抵达提供的物流面单（PDF/URL）；仓库实际贴在包裹上的就是这张</td></tr>
+      <tr><td><strong>轨迹</strong></td><td>易抵达整合头程 + 尾程后回给 ERP 的完整履约轨迹</td></tr>
+      <tr><td><code>track.vivaia.com</code></td><td>现有客户侧轨迹查询站点；客户输入"销售平台订单号 + 自建跟踪号"查询</td></tr>
+      <tr><td><strong>拆分单</strong></td><td>ERP 把一个订单拆成多个独立子订单分别发货，每个子订单一个独立包裹</td></tr>
+      <tr><td><strong>补发单</strong></td><td>ERP 为售后场景生成的独立补发订单，带 <code>isReissued</code> 标记 + <code>parentReissueVirtualOrderNo</code> 关联父单</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div id="sec-3-2">
+  <h3>3.2 自建跟踪号命名规则（v1.1 新设）<span class="change-tag new">NEW</span></h3>
+
+  <h4>3.2.1 规则总览</h4>
+  <pre><code>跟踪号 = 品牌前缀 + 平台订单号(清洗后) + 后缀</code></pre>
+
+  <div class="flow-card">
+    <div class="flow-card-title">跟踪号生成逻辑</div>
+    <div class="mermaid">
+flowchart TD
+  A[订单数据] --> B{订单来源}
+  B -->|GALAXY| P1[前缀=VIVAIA]
+  B -->|Shopify| C{店铺品牌}
+  C -->|VIVAIA 店| P2[前缀=VIVAIA]
+  C -->|FANKA 店| P3[前缀=FANKA]
+  C -->|其他品牌| P4[查映射表<br/>shop_brand_prefix_mapping]
+  P1 --> D[取 platformOrderId]
+  P2 --> D
+  P3 --> D
+  P4 --> D
+  D --> E[字符清洗<br/>去# 转大写 去-_空格]
+  E --> F{订单形态}
+  F -->|原始单| S1[后缀 X00]
+  F -->|拆分子单| S2[后缀 X01..X99]
+  F -->|补发主单| S3[后缀 X00R01..]
+  F -->|拆分+补发| S4[后缀 X{nn}R{nn}]
+  S1 --> R[拼接: 前缀+订单号+后缀]
+  S2 --> R
+  S3 --> R
+  S4 --> R
+  R --> Z[最终跟踪号<br/>例: VIVAIA5839484942X00]
+  style P1 fill:#dbeafe
+  style P2 fill:#dbeafe
+  style P3 fill:#fce7f3
+  style Z fill:#d1fae5,stroke:#10b981
+    </div>
+  </div>
+
+  <h4>3.2.2 品牌前缀</h4>
+  <p>按订单<strong>来源</strong>和<strong>店铺品牌</strong>决定，前缀本身即英文大写字母：</p>
+  <table>
+    <thead><tr><th>订单来源</th><th>店铺品牌</th><th>跟踪号前缀</th></tr></thead>
+    <tbody>
+      <tr><td>GALAXY 国际站</td><td>（单一品牌）</td><td><code>VIVAIA</code></td></tr>
+      <tr><td>Shopify</td><td>VIVAIA 品牌店</td><td><code>VIVAIA</code></td></tr>
+      <tr><td>Shopify</td><td>FANKA 品牌店</td><td><code>FANKA</code></td></tr>
+      <tr><td>Shopify</td><td>未来新增品牌店</td><td>由配置项「Shopify 店铺ID → 品牌前缀」映射表决定</td></tr>
+    </tbody>
+  </table>
+  <blockquote class="info"><strong>配置项</strong>：后台需新建一张映射表 <code>shop_brand_prefix_mapping</code>（或在现有店铺配置上扩字段），运营可维护"Shopify 店铺 ID → 品牌前缀"。新接入的 Shopify 店铺必须先配置好前缀，否则不允许命中自建物流规则。</blockquote>
+
+  <h4>3.2.3 平台订单号</h4>
+  <ul>
+    <li><strong>数据来源</strong>：取 ERP 订单实体上的字段 <code>Order.platformOrderId</code>（"渠道中的订单 ID"，长度 32 位上限）</li>
+    <li><strong>不取</strong>：<code>platformOrderNumber</code>（含 <code>#</code> 等特殊字符）和 <code>orderNumber</code>（ERP 编码后单号，客户/客服无感）</li>
+  </ul>
+
+  <h4>3.2.4 字符清洗</h4>
+  <table>
+    <thead><tr><th>输入特征</th><th>处理</th><th>示例</th></tr></thead>
+    <tbody>
+      <tr><td>前导 <code>#</code> 或其他符号</td><td>去除</td><td><code>#1001</code> → <code>1001</code></td></tr>
+      <tr><td>字母小写</td><td>转大写</td><td><code>abc-123</code> → <code>ABC123</code></td></tr>
+      <tr><td><code>-</code> / 空格 / <code>_</code></td><td>去除</td><td><code>ord-1001</code> → <code>ORD1001</code></td></tr>
+      <tr><td>其他非字母数字字符</td><td>去除</td><td>仅保留 <code>[A-Z0-9]</code></td></tr>
+      <tr><td>清洗后为空</td><td>视为异常，订单分配自建物流失败抛错</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h4>3.2.5 后缀</h4>
+  <p>后缀<strong>强制必带</strong>，按订单形态生成：</p>
+  <table>
+    <thead><tr><th>订单形态</th><th>后缀格式</th><th>样例</th></tr></thead>
+    <tbody>
+      <tr><td>原始单（不拆不补）</td><td><code>X00</code></td><td><code>VIVAIA5839484942X00</code></td></tr>
+      <tr><td>拆分单（第 N 子单）</td><td><code>X{nn}</code>，nn 两位补零 01..99</td><td><code>VIVAIA5839484942X01</code>、<code>...X02</code></td></tr>
+      <tr><td>补发主单（原单的第 N 次补发）</td><td><code>X00R{nn}</code>，nn 两位补零</td><td><code>VIVAIA5839484942X00R01</code></td></tr>
+      <tr><td>拆分子单又被补发</td><td><code>X{nn}R{nn}</code>，叠加无连字符</td><td><code>VIVAIA5839484942X01R01</code></td></tr>
+      <tr><td>补发的补发（罕见）</td><td>在所属拆分位（X00 或 X{nn}）上 R 序号累加</td><td><code>VIVAIA5839484942X00R02</code>、<code>VIVAIA5839484942X01R02</code></td></tr>
+    </tbody>
+  </table>
+  <blockquote class="info"><strong>设计要点</strong>：<br>
+    • 序号采用 <strong>2 位补零</strong>（X01~X99 / R01~R99），业务上拆分/补发不超过 99 单，足够；<br>
+    • 原始单也带 X00 后缀，保持所有跟踪号"必有后缀"的统一格式，便于后端解析；<br>
+    • 拆分子单的补发<strong>叠加 R 后缀</strong>而非生成新订单跟踪号——保留"这是哪条拆分子单的补发"信息。
+  </blockquote>
+
+  <h4>3.2.6 唯一性保证</h4>
+  <ul>
+    <li>一个<strong>包裹</strong>对应一个<strong>订单</strong>（含拆分子单 / 补发单），1:1 关系；不同订单跟踪号必然不同</li>
+    <li>"平台订单号 + 后缀"在<strong>同一来源</strong>内由平台 + ERP 联合保证唯一</li>
+    <li><strong>残余风险（接受）</strong>：GALAXY 与 Shopify 跨来源极端情况下平台订单 ID 可能数字相同 → 跟踪号撞号；本期评估概率极低，<strong>暂不加来源码兜底</strong>，由后续监控 + 入库唯一性约束兜底</li>
+  </ul>
+
+  <h4>3.2.7 字符集与长度</h4>
+  <ul>
+    <li><strong>字符集</strong>：<code>[A-Z0-9]</code> 大写字母 + 数字</li>
+    <li><strong>典型长度</strong>：19~28 位（Shopify GID 通常 10~15 位，加品牌+后缀）</li>
+    <li><strong>极端上限</strong>：<code>VIVAIA(6) + 平台订单号(32) + X00R99(6) = 44</code> 位</li>
+    <li><strong>风险</strong>：超过部分销售平台 tracking number 字段长度限制（一般 35 位）。研发联调时需核实易抵达和销售平台对长度的实际接受范围；如确实超限，可对清洗后平台订单号做"末尾保留 N 位 + 头部哈希"的截断兜底（兜底方案在本期不实现，先做监控告警）</li>
+  </ul>
+
+  <h4>3.2.8 生成时机</h4>
+  <p>跟踪号在订单<strong>分配自建物流</strong>那一刻就生成（早于易抵达取号）。详见 §4.1。</p>
+
+  <h4>3.2.9 完整样例</h4>
+  <table>
+    <thead><tr><th>场景</th><th>来源</th><th>店铺</th><th>平台订单 ID</th><th>跟踪号</th></tr></thead>
+    <tbody>
+      <tr><td>普通单</td><td>GALAXY</td><td>—</td><td><code>5839484942</code></td><td><code>VIVAIA5839484942X00</code></td></tr>
+      <tr><td>普通单</td><td>Shopify</td><td>VIVAIA-US</td><td><code>gid://shopify/Order/4839...</code> 取数字段 <code>4839xxx</code></td><td><code>VIVAIA4839XXXX00</code></td></tr>
+      <tr><td>拆分子单</td><td>Shopify</td><td>FANKA</td><td><code>1001</code></td><td><code>FANKA1001X01</code>、<code>FANKA1001X02</code></td></tr>
+      <tr><td>补发单</td><td>Shopify</td><td>VIVAIA</td><td><code>1001</code></td><td><code>VIVAIA1001X00R01</code></td></tr>
+      <tr><td>拆分+补发</td><td>GALAXY</td><td>—</td><td><code>5839</code></td><td><code>VIVAIA5839X02R01</code></td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- 四、核心流程 -->
+<section id="section-4">
+  <h2>四、核心流程</h2>
+
+  <div id="sec-4-1">
+  <h3>4.1 订单分配自建物流（取号 + 取面单）</h3>
+  <div class="flow-card">
+    <div class="flow-card-title">订单分配 + 取号 + 取面单流程</div>
+    <div class="mermaid">
+flowchart TD
+  A[订单创建] --> B[仓库物流匹配规则引擎<br/>复用现有规则引擎<br/>分配目标增加 自建物流]
+  B --> C{命中自建物流?<br/>条件: 销售平台∈GALAXY/Shopify<br/>AND 发货仓=东莞}
+  C -->|否| X[走原有物流商]
+  C -->|是| D[ERP 立刻生成自建跟踪号<br/>按 §3.2 规则<br/>例: VIVAIA5839484942X00]
+  D --> E[异步调易抵达接口<br/>取运单号 + 取面单]
+  E --> F{调用结果}
+  F -->|成功| G[易抵达回 1 个运单号 YIDxxx<br/>+ 面单 PDF/URL]
+  G --> H[物流服务缓存面单<br/>+ 建立映射<br/>自建跟踪号 ↔ YIDxxx ↔ 面单]
+  H --> I[订单状态: 等待出库]
+  F -->|失败| J[订单分配物流失败<br/>抛异常 → 运营手工重试]
+  style D fill:#dbeafe,stroke:#3b82f6
+  style I fill:#d1fae5,stroke:#10b981
+  style J fill:#fee2e2,stroke:#ef4444
+    </div>
+  </div>
+  <p><strong>关键点</strong>：</p>
+  <ul>
+    <li>自建跟踪号在订单分配那一刻就生成，<strong>早于易抵达取号</strong>。</li>
+    <li>一个包裹一个自建跟踪号；订单拆多包裹时按拆分子单各自生成，每个子单跟踪号互不相同（X01/X02/...）。</li>
+    <li>取号 + 取面单<strong>一次接口调用一起完成</strong>（同步或异步取决于易抵达 API 设计）。</li>
+  </ul>
+  </div>
+
+  <div id="sec-4-2">
+  <h3>4.2 仓库出库（仓库无感知）</h3>
+  <div class="flow-card">
+    <div class="flow-card-title">仓库出库流程</div>
+    <div class="mermaid">
+flowchart TD
+  A[仓库收 ERP 出库指令<br/>订单上物流商=自建物流] --> B[仓库拣货<br/>需要面单时 按 packageNumber<br/>调物流服务]
+  B --> C{物流服务<br/>面单缓存状态}
+  C -->|已缓存| D[直接返回 PDF]
+  C -->|未缓存<br/>异常兜底| E[实时调易抵达再拉]
+  D --> F[仓库打面单贴包裹<br/>面单上是易抵达运单号 YIDxxx]
+  E --> F
+  F --> G[仓库扫码出库<br/>沿用现有 packageNumber 出库消息<br/>无需新增字段]
+  G --> H[ERP 收到出库确认]
+  H --> I[回传销售平台]
+  style A fill:#fef3c7
+  style I fill:#d1fae5,stroke:#10b981
+    </div>
+  </div>
+  <p><strong>仓库视角</strong>：贴面单和扫码出库的<strong>操作动作</strong>与现有真实物流商完全一致；但代码侧需对 3 处逻辑做轻量改造（详见 §4.8）：</p>
+  <ol>
+    <li>包裹扫码查询要支持"易抵达运单号 ↔ 自建跟踪号"双向映射</li>
+    <li>跟踪号 specialConversion 截断逻辑需对自建品牌前缀加白名单</li>
+    <li>快速换单需新增自建物流分支处理</li>
+  </ol>
+  <p>业务方/仓管的<strong>操作流程零改动</strong>；研发侧仓库代码<strong>轻量改动</strong>（v1.1 二轮修订，原"仓库零改动"结论作废）。</p>
+  </div>
+
+  <div id="sec-4-3">
+  <h3>4.3 销售平台回传</h3>
+  <p>订单出库后回传销售平台（GALAXY 国际站 + Shopify）：</p>
+  <table>
+    <thead><tr><th>字段</th><th>填什么</th></tr></thead>
+    <tbody>
+      <tr><td>Carrier name</td><td><strong>自建物流</strong>（中英文名待定，且是否按品牌差异化也待定，见第十章）</td></tr>
+      <tr><td>Tracking number</td><td><strong>自建跟踪号</strong>（按 §3.2 规则生成，例：<code>VIVAIA5839484942X00</code>）</td></tr>
+      <tr><td>Tracking URL</td><td>跳转到 <code>track.vivaia.com</code>（可拼接订单号+跟踪号参数）</td></tr>
+    </tbody>
+  </table>
+  <blockquote class="info">本期回传逻辑只动 GALAXY + Shopify 两个适配器，其他平台保持原状。</blockquote>
+  </div>
+
+  <div id="sec-4-4">
+  <h3>4.4 轨迹定时拉取</h3>
+  <div class="flow-card">
+    <div class="flow-card-title">轨迹定时拉取流程</div>
+    <div class="mermaid">
+flowchart TD
+  A[XxlJob 定时任务<br/>建议复用现有定时调度] --> B[按状态分档批量拉取易抵达接口]
+  B --> C1[未发货状态<br/>不拉]
+  B --> C2[在途状态<br/>30 分钟一轮]
+  B --> C3[派送中状态<br/>15 分钟一轮]
+  B --> C4[已签收 / 超 60 天<br/>24 小时一轮]
+  C2 --> D[按易抵达运单号批量查]
+  C3 --> D
+  C4 --> D
+  D --> E[写入 ERP 轨迹表<br/>按自建跟踪号索引]
+  E --> F1[消费方 1<br/>track.vivaia.com 查询]
+  E --> F2[消费方 2<br/>节点时效预警]
+  style A fill:#dbeafe,stroke:#3b82f6
+  style E fill:#d1fae5,stroke:#10b981
+    </div>
+  </div>
+  </div>
+
+  <div id="sec-4-5">
+  <h3>4.5 客户查询轨迹</h3>
+  <div class="flow-card">
+    <div class="flow-card-title">客户查询轨迹流程</div>
+    <div class="mermaid">
+flowchart TD
+  A[客户访问<br/>track.vivaia.com] --> B[输入<br/>销售平台订单号 + 自建跟踪号<br/>例: 1001 + VIVAIA1001X01R01]
+  B --> C[track 系统校验匹配<br/>AND/OR 待定 见第十章]
+  C --> D{校验通过?}
+  D -->|是| E[读取 ERP 轨迹表]
+  D -->|否| X[查询失败提示]
+  E --> F[原样展示<br/>易抵达整合后的完整轨迹]
+  style A fill:#fef3c7
+  style F fill:#d1fae5,stroke:#10b981
+    </div>
+  </div>
+  <div class="alert alert-warn">⚠️ <strong>保留意见</strong>：易抵达回的某条节点文案里若出现头程承运商名字，会直接露出给客户。本期暂不处理；后期如有需要可加一道关键词替换/脱敏开关。</div>
+  </div>
+
+  <div id="sec-4-6">
+  <h3>4.6 订单取消</h3>
+  <div class="flow-card">
+    <div class="flow-card-title">订单取消流程</div>
+    <div class="mermaid">
+flowchart TD
+  A[订单取消事件<br/>已分配自建物流但未签收] --> B[ERP 调易抵达<br/>作废运单 接口]
+  B --> C[易抵达回执]
+  C --> D[ERP 自建号置为 作废]
+  D --> E[通知销售平台撤回<br/>退款流程沿用现有]
+  style A fill:#fef3c7
+  style E fill:#d1fae5,stroke:#10b981
+    </div>
+  </div>
+  </div>
+
+  <div id="sec-4-7">
+  <h3>4.7 异常兜底</h3>
+  <table>
+    <thead><tr><th width="6%">场景</th><th>业务策略</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>易抵达取号失败 → <strong>直接报错，订单分配物流失败</strong>，运营手工重试</td><td>建议技术侧加 3 次自动重试再抛人工，具体由架构组评估</td></tr>
+      <tr><td>B</td><td>自建号已生成但易抵达迟未回 → <strong>设 SLA 时长（建议 2 小时）</strong>，超时告警人工干预</td><td>告警渠道沿用现有运维体系</td></tr>
+      <tr><td>C</td><td>面单获取失败 → <strong>仓库出库时实时再拉一次</strong>（懒加载兜底）</td><td>二次拉仍失败则阻塞出库 + 告警</td></tr>
+      <tr><td>D</td><td>轨迹长时间无更新 → <strong>触发节点时效预警</strong>（复用现有预警产品）</td><td>自建物流商作为预警维度的一种</td></tr>
+      <tr><td>E</td><td>订单取消 → <strong>调易抵达作废接口</strong> + ERP 自建号作废</td><td>已签收订单不可作废，走退款链路</td></tr>
+      <tr><td>F</td><td>自建跟踪号生成时唯一性冲突（极端） → <strong>入库前查重，命中冲突则报错告警</strong>，由人工核查</td><td>残余风险兜底，详见 §3.2.6</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div id="sec-4-8">
+  <h3>4.8 仓库实操中的注意事项 <span class="change-tag">v1.1 二轮新增</span></h3>
+  <blockquote>经核查仓库代码（<code>erp-warehouse</code>），自建物流场景下有 3 处实操逻辑必须额外处理。<strong>v1.0 / v1.1 一稿中"仓库零改动"的结论修订为"仓库轻量改动"。</strong></blockquote>
+
+  <h4>4.8.1 核重发货：跟踪号一致性校验冲突</h4>
+  <p><strong>现状</strong>（<code>DelivereServiceImpl.java:725</code>）：</p>
+  <pre><code>if (!订单.trackingNumber.equalsIgnoreCase(包裹.trackingNumber)) {
+    throw "ERP订单号[X]当前跟踪号为[A]，与包裹跟踪号[B]不一致，不能进行发货"
+}</code></pre>
+  <p>仓库扫描完成后会强校验"虚拟订单上的跟踪号 == 包裹上的跟踪号"，<strong>大小写不敏感</strong>。</p>
+  <p><strong>冲突</strong>：</p>
+  <ul>
+    <li>面单上印的是<strong>易抵达运单号</strong>（仓库 PDA 扫的就是这个号）</li>
+    <li>销售平台回传给客户的是<strong>自建跟踪号</strong>（订单上需要存这个号）</li>
+    <li>如果一个字段存自建号、另一个存易抵达号，校验必然失败</li>
+  </ul>
+  <p><strong>约定</strong>（写进数据模型）：</p>
+  <table>
+    <thead><tr><th>字段位置</th><th>存什么</th><th>备注</th></tr></thead>
+    <tbody>
+      <tr><td><code>VirtualOrder.trackingNumber</code>（虚拟订单上）</td><td><strong>自建跟踪号</strong></td><td>与销售平台回传保持一致</td></tr>
+      <tr><td><code>Package.trackingNumber</code>（包裹上）</td><td><strong>自建跟踪号</strong></td><td>与订单一致，核重校验通过</td></tr>
+      <tr><td><code>Package.providerTrackingNumber</code>（<strong>新增字段</strong>）</td><td><strong>易抵达运单号</strong></td><td>仓库面单上打印的就是这个号；扫码时映射回自建号</td></tr>
+    </tbody>
+  </table>
+  <p><strong>仓库改动</strong>：</p>
+  <ol>
+    <li>仓库 <code>Package</code> 实体新增 <code>providerTrackingNumber</code> 字段（仅自建物流场景非空）</li>
+    <li>仓库扫码查找方法 <code>packageMapper.findByTrackingNumberOrPackageNumber</code> 增加 <code>providerTrackingNumber</code> 查询路径——扫到易抵达号也能查到包裹</li>
+    <li>面单打印时取 <code>providerTrackingNumber</code> 而不是 <code>trackingNumber</code></li>
+  </ol>
+
+  <h4>4.8.2 specialConversion 截断匹配的污染风险</h4>
+  <p><strong>现状</strong>（<code>TrackingNumberUtil.java:25</code>）：当扫描的跟踪号长度 > 20，会自动尝试 7 种"前/后截断"片段去查（兼容 fedex / 行运易 / 乐天等真实承运商的特殊编码）。</p>
+  <p><strong>冲突</strong>：</p>
+  <ul>
+    <li>自建跟踪号长度典型 19~28 位，<strong>极端值 44 位</strong>（远超 20 位阈值）</li>
+    <li>一旦触发截断，会被切成 6~7 个片段去查包裹 → 任意一个片段碰巧撞中其他真实物流商的号 → 匹配错误的包裹</li>
+  </ul>
+  <p><strong>仓库改动</strong>：</p>
+  <ul>
+    <li>在 <code>specialConversion</code> 入口加白名单短路：以 <code>VIVAIA</code> / <code>FANKA</code> / 已配置的自建品牌前缀开头的跟踪号，<strong>直接返回原值不做截断</strong></li>
+    <li>或在 <code>findByTrackingNumberOrPackageNumber</code> 查询时按 <code>provider_code='self-built'</code> 路由分支</li>
+  </ul>
+
+  <h4>4.8.3 快速换单：三种自建场景的差异化处理</h4>
+  <p><strong>现状</strong>（<code>PackageManagerServiceImpl.java:121</code> <code>regeneratePackageTrackingNumber</code>）：仓库快速换单流程 = 扫包裹 → 选新物流商/渠道 → 调取号 → 替换包裹的 trackingNumber。当前实现没有自建物流分支。</p>
+
+  <div class="flow-card">
+    <div class="flow-card-title">快速换单 - 三种自建场景</div>
+    <div class="mermaid">
+flowchart TD
+  Start[仓库快速换单<br/>扫包裹 → 选新物流商] --> Branch{自建物流场景判断}
+  Branch -->|换出: 自建→真实| O1[① 调易抵达 作废运单]
+  O1 --> O2[② 自建跟踪号映射置 CANCELED]
+  O2 --> O3[③ 真实物流商常规取号]
+  O3 --> O4[④ 触发销售平台回传<br/>新 carrier + 新跟踪号]
+  Branch -->|换入: 真实→自建| I1[① 旧物流商按现有逻辑作废]
+  I1 --> I2[② 按 §3.2 生成新自建跟踪号<br/>X{nn} / R{nn} 按当前形态]
+  I2 --> I3[③ 调易抵达取号 + 取面单]
+  I3 --> I4[④ 触发销售平台回传]
+  Branch -->|换内: 自建→自建<br/>仅换易抵达渠道| N1[① 保留旧自建跟踪号不变<br/>对外承诺不变]
+  N1 --> N2[② 调易抵达 with 新渠道<br/>取新易抵达运单号]
+  N2 --> N3[③ 自建映射表更新<br/>provider_tracking_no + face_sheet_url]
+  N3 --> N4[④ 不触发销售平台回传<br/>自建号未变]
+  style O4 fill:#fee2e2
+  style I4 fill:#fef3c7
+  style N4 fill:#d1fae5
+    </div>
+  </div>
+
+  <p><strong>仓库改动</strong>：</p>
+  <ol>
+    <li><code>regeneratePackageTrackingNumber</code> 服务增加自建物流分支判断（按新旧物流商类型路由 3 种处理逻辑）</li>
+    <li>出参 <code>RegeneratePackageTrackingNumberResponse</code> 需要在换内场景下能区分"自建号未变"，告知调用方不要重复回传销售平台</li>
+    <li>退件后的换单（<code>PackageRejectController</code>）走同一逻辑，本期不做差异化</li>
+  </ol>
+
+  <h4>4.8.4 与拆分/补发后缀的协同</h4>
+  <ul>
+    <li>换单<strong>不影响</strong>自建跟踪号的 X{nn} / R{nn} 后缀——后缀由订单形态决定，与物流商无关</li>
+    <li>同一拆分子单（如 <code>VIVAIA1001X01</code>）从真实物流商换入自建后，仍生成 <code>VIVAIA1001X01</code>（不是 X02）</li>
+    <li>同一补发单的换单同理</li>
+  </ul>
+
+  <h4>4.8.5 大小写策略对齐</h4>
+  <ul>
+    <li>仓库核重校验使用 <code>equalsIgnoreCase</code> → 大小写不敏感</li>
+    <li>自建跟踪号规则 §3.2.4 强制全大写存储 → 与仓库逻辑天然兼容</li>
+    <li><strong><code>track.vivaia.com</code> 查询规则</strong>（§10 待定项 #4）建议同步采用大小写不敏感策略，避免客户输入小写时查不到</li>
+  </ul>
+  </div>
+</section>
+
+<!-- 五、数据模型变更 -->
+<section id="section-5">
+  <h2>五、数据模型变更</h2>
+
+  <h3>5.1 物流商配置（<code>ShippingProviderEnum</code>）</h3>
+  <p><code>order-sdk/.../ShippingProviderEnum.java:23</code> 已存在 <code>VIRTUAL("虚拟物流", "virtual", "virtual")</code>，但该枚举语义偏宽泛、容易冲突。</p>
+  <p><strong>建议</strong>：新增独立枚举项 <code>SELF_BUILT("自建物流", "self-built", "self-built")</code>，与 VIRTUAL 区分（VIRTUAL 留给其他虚拟场景）。后台运维侧建立对应物流商 + 物流渠道配置，与现有真实物流商一样可被规则引擎选中。</p>
+
+  <h3>5.2 自建跟踪号映射表（新增）</h3>
+  <p>新建表 <code>self_built_tracking_mapping</code>：</p>
+  <table>
+    <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>self_built_tracking_no</code></td><td><strong>varchar(50)</strong> PK</td><td>自建跟踪号（v1.1：长度由 v1.0 的 20 位扩到 50 位，对应新规则极端上限 44 位 + 余量）</td></tr>
+      <tr><td><code>brand_prefix</code></td><td>varchar(16)</td><td>品牌前缀（VIVAIA / FANKA / ...），用于检索和分组</td></tr>
+      <tr><td><code>source</code></td><td>varchar(16)</td><td>订单来源（galaxy / shopify）</td></tr>
+      <tr><td><code>shop_id</code></td><td>bigint</td><td>Shopify 店铺 ID（GALAXY 来源时为 NULL）</td></tr>
+      <tr><td><code>platform_order_id_clean</code></td><td>varchar(32)</td><td>清洗后的平台订单号（去掉特殊字符、转大写后的值）</td></tr>
+      <tr><td><code>suffix_type</code></td><td>varchar(16)</td><td><code>ORIGINAL</code> / <code>SPLIT</code> / <code>REISSUE</code> / <code>SPLIT_REISSUE</code></td></tr>
+      <tr><td><code>split_seq</code></td><td>tinyint</td><td>拆分序号（原始单/补发主单为 0；X01..X99）</td></tr>
+      <tr><td><code>reissue_seq</code></td><td>tinyint</td><td>补发序号（无补发为 0；R01..R99）</td></tr>
+      <tr><td><code>virtual_order_id</code></td><td>bigint</td><td>关联虚拟订单</td></tr>
+      <tr><td><code>package_number</code></td><td>varchar(64)</td><td>仓库包裹号（一对一）</td></tr>
+      <tr><td><code>provider_code</code></td><td>varchar(32)</td><td>实际承运服务商代码（如 yidida）</td></tr>
+      <tr><td><code>provider_tracking_no</code></td><td>varchar(64)</td><td>易抵达运单号（取号成功后回填）</td></tr>
+      <tr><td><code>face_sheet_url</code></td><td>varchar(255)</td><td>面单 PDF URL（缓存后回填）</td></tr>
+      <tr><td><code>status</code></td><td>varchar(16)</td><td><code>PENDING_PROVIDER</code> / <code>MAPPED</code> / <code>CANCELED</code></td></tr>
+      <tr><td><code>created_at</code> / <code>updated_at</code></td><td>datetime</td><td>时间戳</td></tr>
+    </tbody>
+  </table>
+  <p><strong>索引</strong>：</p>
+  <ul>
+    <li>主键：<code>self_built_tracking_no</code></li>
+    <li>唯一索引：<code>(brand_prefix, platform_order_id_clean, suffix_type, split_seq, reissue_seq)</code> —— 业务唯一性的入库强校验</li>
+    <li>普通索引：<code>virtual_order_id</code>、<code>package_number</code>、<code>provider_tracking_no</code></li>
+  </ul>
+  <blockquote class="info"><strong>为什么不直接扩 <code>VirtualOrder</code> 字段</strong>：<code>VirtualOrder</code> 是订单维度，自建跟踪号是包裹维度（一拆分子单/补发单 = 一包裹），用单独映射表更干净；同时把后缀分量拆字段存便于检索和回溯。</blockquote>
+
+  <h4>5.2.1 既有字段的存储约定 <span class="change-tag">v1.1 二轮新增</span></h4>
+  <p>对应 §4.8.1，为兼容仓库核重发货校验逻辑（订单跟踪号 == 包裹跟踪号）：</p>
+  <table>
+    <thead><tr><th>字段位置</th><th>存储内容</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>VirtualOrder.trackingNumber</code>（虚拟订单实体）</td><td><strong>自建跟踪号</strong>（如 <code>VIVAIA5839484942X00</code>）</td><td>与销售平台回传保持一致</td></tr>
+      <tr><td><code>Package.trackingNumber</code>（包裹实体）</td><td><strong>自建跟踪号</strong>（与订单一致）</td><td>核重发货校验时两者必须相等（大小写不敏感）</td></tr>
+      <tr><td><code>Package.providerTrackingNumber</code>（<strong>仓库 Package 实体新增字段</strong>）</td><td><strong>易抵达运单号</strong>（如 <code>YIDxxx</code>）</td><td>面单上打印的实际号；扫面单时可反查包裹；仅自建物流场景非空</td></tr>
+    </tbody>
+  </table>
+  <p><strong>仓库 <code>Package</code> 实体改动</strong>：</p>
+  <ul>
+    <li>新增字段 <code>provider_tracking_number</code>，varchar(64)</li>
+    <li>仓库 <code>packageMapper.findByTrackingNumberOrPackageNumber</code> 查询条件追加 <code>provider_tracking_number</code> 命中分支</li>
+  </ul>
+
+  <h3>5.3 轨迹表</h3>
+  <p>如现有 ERP 已有"包裹轨迹"表，<strong>优先复用</strong>，按自建跟踪号建索引。如尚无统一轨迹表，新建 <code>package_tracking_event</code>：</p>
+  <table>
+    <thead><tr><th>字段</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><code>tracking_no</code></td><td>自建跟踪号</td></tr>
+      <tr><td><code>event_time</code></td><td>节点时间</td></tr>
+      <tr><td><code>event_status</code></td><td>状态码（标准化字典）</td></tr>
+      <tr><td><code>event_location</code></td><td>节点地点（透传）</td></tr>
+      <tr><td><code>event_desc</code></td><td>节点描述（透传，含易抵达原文）</td></tr>
+      <tr><td><code>raw_payload</code></td><td>易抵达原始报文（用于排查）</td></tr>
+    </tbody>
+  </table>
+
+  <h3>5.4 物流服务的面单缓存</h3>
+  <p>复用现有真实物流商的面单缓存机制，<strong>无新结构</strong>，仅新增"易抵达"作为面单来源之一。</p>
+
+  <h3>5.5 店铺品牌前缀配置（新增）</h3>
+  <p>为支撑 §3.2.2 的 Shopify 店铺品牌差异化前缀，新增配置：</p>
+  <table>
+    <thead><tr><th>方案</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td><strong>A</strong> 新建表 <code>shop_brand_prefix_mapping(shop_id, brand_prefix, enabled)</code></td><td>独立维度，运营后台可独立维护</td></tr>
+      <tr><td><strong>B</strong> 在现有 Shopify 店铺配置实体上加 <code>brand_prefix</code> 字段</td><td>与店铺生命周期绑定，无需额外维护入口</td></tr>
+    </tbody>
+  </table>
+  <p><strong>建议 B</strong>——研发评估，倾向选阻力更小的一种。</p>
+</section>
+
+<!-- 六、规则引擎扩展 -->
+<section id="section-6">
+  <h2>六、规则引擎扩展</h2>
+  <p><strong>复用现有"仓库物流匹配规则"引擎</strong>（位于 <code>order-core/.../rule/</code>，业务侧已熟悉配置流程）。</p>
+
+  <h3>6.1 改动点</h3>
+  <ul>
+    <li>在物流商分配目标下拉里增加 <strong>"自建物流"</strong></li>
+    <li>规则配置 UI 不变；运营按现有维度（销售平台、仓、目的国、金额、重量、SKU 类目等）配规则</li>
+  </ul>
+
+  <h3>6.2 配置示例（首期推荐）</h3>
+  <pre><code>规则名：自建物流-Shopify-东莞
+条件：销售平台 ∈ {GALAXY国际站, Shopify} AND 发货仓 = 东莞
+分配：自建物流商 + (具体渠道由运营配)
+优先级：高于其他默认物流商</code></pre>
+
+  <h3>6.3 不命中行为</h3>
+  <p>沿用现有：<strong>抛"订单分配物流失败"异常</strong>，运营在异常队列处理。本期不新增容错分支。</p>
+</section>
+
+<!-- 七、节点时效预警的对接 -->
+<section id="section-7">
+  <h2>七、节点时效预警的对接</h2>
+  <blockquote>本期不重做预警，但要让自建物流商的订单<strong>能被现有预警产品识别和监控</strong>。</blockquote>
+  <table>
+    <thead><tr><th>改造点</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td>预警维度新增</td><td>物流商 = 自建物流（作为筛选/分组维度）</td></tr>
+      <tr><td>时效规则配置</td><td>业务方可单独为自建物流配标准时效（如 KR 5 天、JP 7 天）</td></tr>
+      <tr><td>数据源</td><td>自建跟踪号的轨迹表数据</td></tr>
+      <tr><td>预警工单</td><td>沿用现有 4 态工单流程（待处理/处理中/已处理/无需处理）</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 八、影响范围与改动清单 -->
+<section id="section-8">
+  <h2>八、影响范围与改动清单</h2>
+  <blockquote>仅列改动的"名词清单"，详细任务拆分由研发评估时再细化。</blockquote>
+
+  <h3>8.1 后端代码（<code>erp-order-test</code>）</h3>
+  <table>
+    <thead><tr><th width="25%">模块</th><th>改动</th></tr></thead>
+    <tbody>
+      <tr><td><code>order-sdk</code></td><td>新增 <code>ShippingProviderEnum.SELF_BUILT</code></td></tr>
+      <tr><td><code>order-core</code></td><td>仓库物流匹配规则引擎新增分配目标"自建物流"</td></tr>
+      <tr><td><code>order-core</code></td><td>新建 <code>self_built_tracking_mapping</code> 表 + 实体 + Repository（含唯一索引）</td></tr>
+      <tr><td><code>order-core</code></td><td><strong>自建跟踪号生成器</strong>（实现 §3.2 规则：品牌前缀路由 + 字符清洗 + 后缀拼装 + 唯一性入库校验）</td></tr>
+      <tr><td><code>order-core</code></td><td>店铺品牌前缀配置（5.5 方案 B：在 Shopify 店铺配置上加 <code>brand_prefix</code> 字段）</td></tr>
+      <tr><td><code>order-core</code></td><td><code>VirtualOrderShippingFacadeImpl</code> 增加自建分支：跟踪号生成 + 调物流服务取易抵达号 + 建立映射</td></tr>
+      <tr><td><code>order-backstage-service</code></td><td>新增 <code>SelfBuiltTrackingPullJob</code>（定时拉轨迹）/ 或扩展现有轨迹拉取 Job</td></tr>
+      <tr><td><code>order-backstage-service</code></td><td><code>TrackNumberCallbackFromShippingConsumer</code> 增加自建物流的回调处理（落映射）</td></tr>
+      <tr><td><code>order-backstage-service</code></td><td>订单取消流程增加调易抵达作废接口</td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.2 物流服务（独立微服务）</h3>
+  <table>
+    <thead><tr><th>改动</th></tr></thead>
+    <tbody>
+      <tr><td>新增易抵达 Adapter：取号、取面单、查轨迹、作废运单</td></tr>
+      <tr><td>面单缓存复用现有机制</td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.3 销售平台对接</h3>
+  <table>
+    <thead><tr><th>平台</th><th>改动</th></tr></thead>
+    <tbody>
+      <tr><td>Shopify</td><td>Carrier name + tracking URL 配置（自建物流 → track.vivaia.com）</td></tr>
+      <tr><td>GALAXY 国际站</td><td>同上</td></tr>
+      <tr><td>其他平台（含 TikTok）</td><td><strong>不动</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.4 仓库系统 <span class="change-tag">v1.1 二轮：由"零改动"改为"轻量改动"</span></h3>
+  <table>
+    <thead><tr><th width="32%">模块 / 文件</th><th>改动</th></tr></thead>
+    <tbody>
+      <tr><td><code>Package</code> 实体 + <code>package</code> 表</td><td>新增字段 <code>provider_tracking_number</code> varchar(64)，仅自建物流场景非空（存易抵达运单号）</td></tr>
+      <tr><td><code>PackageMapper.findByTrackingNumberOrPackageNumber</code></td><td>查询条件追加 <code>provider_tracking_number</code> 命中分支，支持仓库扫面单（易抵达号）反查包裹</td></tr>
+      <tr><td><code>TrackingNumberUtil.specialConversion</code></td><td>入口加白名单短路：以自建品牌前缀（VIVAIA / FANKA / 配置项中的其他前缀）开头的跟踪号直接返回原值，不做截断</td></tr>
+      <tr><td><code>DelivereServiceImpl</code> 核重发货</td><td>校验逻辑无需改（订单和包裹的 trackingNumber 都存自建号即可），但需要面单打印逻辑改为取 <code>providerTrackingNumber</code></td></tr>
+      <tr><td><code>PackageManagerServiceImpl.regeneratePackageTrackingNumber</code> 快速换单</td><td>增加自建物流分支：换出（作废易抵达号 + 自建号置 CANCELED）/ 换入（生成自建号 + 取易抵达号）/ 换内（保留自建号 + 换易抵达号），详见 §4.8.3</td></tr>
+      <tr><td><code>PackageRejectController</code> 退件换单</td><td>与上同源（共用 <code>regeneratePackageTrackingNumber</code>），本期不做差异化</td></tr>
+    </tbody>
+  </table>
+  <p>仓库<strong>业务方/仓管的操作流程零改动</strong>——所有变更在代码层。</p>
+
+  <h3>8.5 <code>track.vivaia.com</code></h3>
+  <table>
+    <thead><tr><th>改动</th></tr></thead>
+    <tbody>
+      <tr><td>识别新规则的自建跟踪号（按品牌前缀路由）</td></tr>
+      <tr><td>调 ERP 接口拉对应轨迹（按自建跟踪号查）</td></tr>
+      <tr><td>展示规则：透传，不做节点合并/文案改写</td></tr>
+    </tbody>
+  </table>
+
+  <h3>8.6 节点时效预警产品</h3>
+  <table>
+    <thead><tr><th>改动</th></tr></thead>
+    <tbody>
+      <tr><td>物流商维度新增"自建物流"选项</td></tr>
+      <tr><td>标准时效配置入口允许配自建物流的时效</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 九、上线计划与回滚 -->
+<section id="section-9">
+  <h2>九、上线计划与回滚</h2>
+
+  <h3>9.1 推荐上线步骤</h3>
+  <div class="flow-card">
+    <div class="flow-card-title">上线步骤流程</div>
+    <div class="mermaid">
+flowchart LR
+  S1[1. 数据库变更<br/>映射表+轨迹表+品牌前缀字段] --> S2[2. 运营预录入<br/>GALAXY/VIVAIA/FANKA<br/>品牌前缀]
+  S2 --> S3[3. 后端代码上线<br/>带功能开关 默认关闭]
+  S3 --> S4[4. 易抵达 API 联调<br/>UAT 取号/面单/轨迹/作废<br/>4 个接口对拍]
+  S4 --> S5[5. 配置规则但不启用]
+  S5 --> S6[6. 灰度第一条规则<br/>建议 Shopify-VIVAIA-东莞]
+  S6 --> S7[7. 观察 7 天<br/>取号成功率/面单率/<br/>轨迹回传/投诉/唯一性=0]
+  S7 --> S8[8. 全量启用]
+  style S1 fill:#dbeafe
+  style S6 fill:#fef3c7
+  style S8 fill:#d1fae5,stroke:#10b981
+    </div>
+  </div>
+
+  <h3>9.2 回滚预案</h3>
+  <table>
+    <thead><tr><th>触发条件</th><th>动作</th></tr></thead>
+    <tbody>
+      <tr><td>取号成功率 &lt; 95% / 面单缺失率 &gt; 5%</td><td>关闭规则引擎"自建物流"分配目标的开关；新订单不再走自建</td></tr>
+      <tr><td>跟踪号唯一性冲突 &gt; 0</td><td>立即关闭灰度，复盘根因（疑似跨来源平台 ID 撞号）；评估是否启用 v1.1 暂未实施的"来源码兜底"</td></tr>
+      <tr><td>已分配自建物流的在途订单</td><td><strong>维持现状继续走完履约</strong>，不做单笔回滚（避免对已回传销售平台的订单造成冲击）</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 十、关键风险与对策 -->
+<section id="section-10">
+  <h2>十、关键风险与对策</h2>
+  <table>
+    <thead><tr><th width="40%">风险</th><th>对策</th></tr></thead>
+    <tbody>
+      <tr><td>易抵达接口稳定性差，导致大量订单卡在"分配物流失败"</td><td>加技术侧自动重试 + 监控告警 + 业务侧"非命中规则的兜底物流商"开关</td></tr>
+      <tr><td>易抵达轨迹文案泄露头程承运商品牌</td><td>留关键词替换开关；上线前抽查易抵达样本数据</td></tr>
+      <tr><td>自建跟踪号被销售平台/客户分享后被识别为"假号"</td><td>跟踪号格式规范化 + <code>track.vivaia.com</code> 提供权威查询入口；新规则带可读品牌前缀，识别度更高</td></tr>
+      <tr><td>一单多包裹场景下客户体验混乱（"我下了 1 个单怎么有 2 个跟踪号"）</td><td>销售平台订单页明确展示每个包裹独立的发货信息 + 客服话术准备；新规则的 X01/X02 后缀直观体现拆分关系</td></tr>
+      <tr><td>取号成功但面单链接过期（易抵达侧 PDF URL 有时效）</td><td>物流服务侧落地缓存（PDF 二进制持久化，不依赖 URL）</td></tr>
+      <tr><td><span class="change-tag new">v1.1 新增</span> 跟踪号长度超销售平台 tracking number 字段上限</td><td>联调前实测 Shopify / GALAXY 对长度的接受范围；若超限，对清洗后平台订单号做"末尾保留 N 位 + 头部哈希"的截断兜底</td></tr>
+      <tr><td><span class="change-tag new">v1.1 新增</span> GALAXY 与 Shopify 跨来源平台订单 ID 撞号</td><td>入库唯一索引强校验 + 监控告警，命中告警即评估启用"来源码兜底"（在品牌前缀后加 G/S，需小幅改造）</td></tr>
+      <tr><td><span class="change-tag new">v1.1 新增</span> 新增 Shopify 店铺未配置品牌前缀就接订单</td><td>规则引擎在分配自建物流前校验店铺是否有 <code>brand_prefix</code> 配置，无则抛错 + 告警，倒逼运营先配置</td></tr>
+      <tr><td><span class="change-tag">v1.1 二轮新增</span> 核重发货跟踪号不一致校验失败</td><td>严格遵守 §5.2.1 存储约定：订单和包裹的 <code>trackingNumber</code> 字段都存自建号；面单上打印的易抵达号存到 <code>Package.providerTrackingNumber</code>。上线前用真实样本跑一遍核重流程做回归</td></tr>
+      <tr><td><span class="change-tag">v1.1 二轮新增</span> specialConversion 截断片段误匹配</td><td>在 <code>TrackingNumberUtil.specialConversion</code> 入口对自建品牌前缀加白名单短路；上线前回归测试 fedex / 行运易 / 乐天等承运商的截断匹配是否仍正常</td></tr>
+      <tr><td><span class="change-tag">v1.1 二轮新增</span> 快速换单的换内场景未识别，重复回传销售平台</td><td><code>regeneratePackageTrackingNumber</code> 出参带"自建号是否变更"标志，调用方据此决定是否回传销售平台；上线前回归换出/换入/换内 3 种场景</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 附 -->
+<section id="section-appendix">
+  <h2>附：核心代码参考点</h2>
+  <table>
+    <thead><tr><th width="48%">文件</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr><td><code>order-sdk/.../ShippingProviderEnum.java:11-39</code></td><td>物流商枚举，新增 SELF_BUILT</td></tr>
+      <tr><td><code>order-core/.../entity/Order.java:112</code></td><td><code>platformOrderId</code> 字段，跟踪号规则的"平台订单号"取数源</td></tr>
+      <tr><td><code>order-core/.../entity/VirtualOrder.java:402-408</code></td><td><code>isReissued</code> + <code>parentReissueVirtualOrderNo</code> 字段，补发单识别和回溯</td></tr>
+      <tr><td><code>order-core/.../entity/VirtualOrder.java:111-113</code></td><td><code>splitOrUnion</code> 字段，拆分单识别</td></tr>
+      <tr><td><code>order-core/.../entity/VirtualOrder.java:245-303</code></td><td>订单上的物流字段</td></tr>
+      <tr><td><code>order-core/.../facade/impl/VirtualOrderShippingFacadeImpl.java:127</code></td><td>referenceNumber 生成位置，新增自建跟踪号生成入口</td></tr>
+      <tr><td><code>order-core/.../service/impl/VirtualOrderShippingAddressServiceImpl.java:1132</code></td><td>updateTrackingNumber 方法，建立映射的写入点</td></tr>
+      <tr><td><code>order-backstage-service/.../queue/consumer/TrackNumberCallbackFromShippingConsumer.java</code></td><td>物流回调消费者，处理易抵达取号回调</td></tr>
+      <tr><td><code>order-backstage-service/.../job/GettingTrackNumberTaskJob.java</code></td><td>定时取号任务，扩展或新建拉轨迹 Job</td></tr>
+      <tr><td><code>order-core/.../rule/condition/data/ShippingChannel.java</code></td><td>规则引擎数据模型，规则引擎复用入口</td></tr>
+      <tr><td><code>erp-warehouse/.../DelivereServiceImpl.java:725</code></td><td><strong>核重发货</strong>校验：订单跟踪号 == 包裹跟踪号（详见 §4.8.1）</td></tr>
+      <tr><td><code>erp-warehouse/.../TrackingNumberUtil.java:25</code></td><td><strong>specialConversion</strong> 跟踪号截断匹配（详见 §4.8.2）</td></tr>
+      <tr><td><code>erp-warehouse/.../PackageManagerServiceImpl.java:121</code></td><td><strong>快速换单</strong> <code>regeneratePackageTrackingNumber</code>（详见 §4.8.3）</td></tr>
+      <tr><td><code>erp-warehouse/.../PackageRejectController.java:61</code></td><td><strong>退件换单</strong>入口（与快速换单同源）</td></tr>
+      <tr><td><code>erp-warehouse/.../HardwareController.java:41</code></td><td>核重发货 PDA 入口</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<div class="footer">
+  — END —<br>
+  自建物流商 产品方案 v1.1 · 2026-04-29
+</div>
+
+</div>
+</main>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    flowchart: {
+      curve: 'basis',
+      padding: 20,
+      nodeSpacing: 50,
+      rankSpacing: 50,
+      useMaxWidth: true
+    },
+    themeVariables: {
+      fontFamily: '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif',
+      fontSize: '13px',
+      primaryColor: '#dbeafe',
+      primaryTextColor: '#1e40af',
+      primaryBorderColor: '#3b82f6',
+      lineColor: '#64748b',
+      secondaryColor: '#e0e7ff',
+      tertiaryColor: '#f1f5f9'
+    }
+  });
+</script>
+
+</body>
+</html>
