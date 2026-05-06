@@ -278,7 +278,7 @@
 <nav class="sidebar">
   <div class="sidebar-title">
     自建物流商 产品方案
-    <div class="sidebar-version">v1.1 · 2026-04-29</div>
+    <div class="sidebar-version">v1.1 · 2026-04-30（三轮修订）</div>
   </div>
   <ul>
     <li><a href="#changelog">📌 版本变更（v1.0→v1.1）</a></li>
@@ -287,6 +287,7 @@
     <li><a href="#section-3">三、术语与核心概念</a></li>
     <li><a href="#sec-3-1" class="sub">3.1 术语表</a></li>
     <li><a href="#sec-3-2" class="sub">3.2 自建跟踪号命名规则</a></li>
+    <li><a href="#sec-3-2-5-1" class="sub-sub">3.2.5.1 订单重置业务定义</a></li>
     <li><a href="#section-4">四、核心流程</a></li>
     <li><a href="#sec-4-1" class="sub">4.1 订单分配自建物流</a></li>
     <li><a href="#sec-4-2" class="sub">4.2 仓库出库</a></li>
@@ -313,7 +314,7 @@
   <h1>自建物流商 产品方案 <span class="badge">v1.1</span></h1>
   <div class="doc-meta">
     <span>📅 创建时间：2026-04-28（v1.0）</span>
-    <span>🔄 修订时间：2026-04-29（v1.1）</span>
+    <span>🔄 修订时间：2026-04-30（v1.1 三轮修订）</span>
     <span>👤 作者：产品 / 张洪琼</span>
   </div>
 </header>
@@ -331,6 +332,10 @@
       <tr><td>新增<strong>待定项</strong>：销售平台回传时 carrier name 是否需按品牌差异化（VIVAIA 店 vs FANKA 店）</td><td>跟踪号已按品牌分流，carrier name 是否同步差异化是新问题</td><td>十</td></tr>
       <tr><td><span class="change-tag">v1.1 二轮</span>修订"仓库零改动"结论 → "仓库轻量改动"，新增 §4.8 仓库实操注意事项专章</td><td>业务方提示：核重发货、快速换单两个仓库实操场景未在 v1.0 中覆盖；代码核查发现 3 处冲突点</td><td>四、五、八、十一</td></tr>
       <tr><td><span class="change-tag">v1.1 二轮</span>数据模型 5.2 增加 <code>provider_tracking_no</code> 与 <code>package.trackingNumber</code> 的存储约定</td><td>兼容核重发货校验逻辑</td><td>五</td></tr>
+      <tr><td><span class="change-tag new">v1.1 三轮</span>跟踪号规则增加<strong>重置标记</strong> <code>T{nn}</code> 后缀；后缀升级为三段 <code>X{nn}[R{nn}][T{nn}]</code></td><td>业务方诉求："订单可重置，重置后跟踪号需在系统全局唯一，且要一眼看出是否被重置过及次数"</td><td>三、四、五、十</td></tr>
+      <tr><td><span class="change-tag new">v1.1 三轮</span>§3.2.3 订单号取数源<strong>按店铺来源显式区分</strong>（表格化）</td><td>防止 GALAXY/Shopify 实施时取错字段</td><td>三</td></tr>
+      <tr><td><span class="change-tag new">v1.1 三轮</span>数据模型 5.2 增加 <code>reset_seq</code> 字段 + 唯一索引补充重置维度；<code>status</code> 新增 <code>RESET</code> 值</td><td>重置次数入库存储；保证全局唯一约束；旧号永不复用</td><td>五</td></tr>
+      <tr><td><span class="change-tag new">v1.1 三轮</span>异常兜底 §4.7 新增"订单重置"场景；新增 §3.2.5.1 订单重置业务定义</td><td>业务流程闭环</td><td>四</td></tr>
     </tbody>
   </table>
 </section>
@@ -405,36 +410,37 @@ flowchart LR
   <h3>3.2 自建跟踪号命名规则（v1.1 新设）<span class="change-tag new">NEW</span></h3>
 
   <h4>3.2.1 规则总览</h4>
-  <pre><code>跟踪号 = 品牌前缀 + 平台订单号(清洗后) + 后缀</code></pre>
+  <pre><code>跟踪号 = 品牌前缀 + 平台订单号(清洗后) + 后缀
+后缀 = X段（拆分位） + [R段（补发位）] + [T段（重置位）]</code></pre>
 
   <div class="flow-card">
-    <div class="flow-card-title">跟踪号生成逻辑</div>
+    <div class="flow-card-title">跟踪号生成逻辑（v1.1 三轮：三段后缀）</div>
     <div class="mermaid">
 flowchart TD
   A[订单数据] --> B{订单来源}
-  B -->|GALAXY| P1[前缀=VIVAIA]
-  B -->|Shopify| C{店铺品牌}
-  C -->|VIVAIA 店| P2[前缀=VIVAIA]
-  C -->|FANKA 店| P3[前缀=FANKA]
-  C -->|其他品牌| P4[查映射表<br/>shop_brand_prefix_mapping]
-  P1 --> D[取 platformOrderId]
-  P2 --> D
-  P3 --> D
-  P4 --> D
-  D --> E[字符清洗<br/>去# 转大写 去-_空格]
-  E --> F{订单形态}
-  F -->|原始单| S1[后缀 X00]
-  F -->|拆分子单| S2[后缀 X01..X99]
-  F -->|补发主单| S3[后缀 X00R01..]
-  F -->|拆分+补发| S4[后缀 X{nn}R{nn}]
-  S1 --> R[拼接: 前缀+订单号+后缀]
-  S2 --> R
-  S3 --> R
-  S4 --> R
-  R --> Z[最终跟踪号<br/>例: VIVAIA5839484942X00]
+  B -->|GALAXY| P1[前缀=VIVAIA<br/>取 Order.platformOrderId<br/>整段使用]
+  B -->|Shopify VIVAIA 店| P2[前缀=VIVAIA<br/>取 platformOrderId 末段数字]
+  B -->|Shopify FANKA 店| P3[前缀=FANKA<br/>取 platformOrderId 末段数字]
+  B -->|Shopify 其他品牌| P4[查映射表<br/>shop_brand_prefix_mapping]
+  P1 --> E[字符清洗<br/>去# 转大写 去-_空格]
+  P2 --> E
+  P3 --> E
+  P4 --> E
+  E --> X{X 段：拆分位<br/>强制必带}
+  X -->|原始单 / 补发主单| X0[X00]
+  X -->|拆分子单| Xn[X01..X99]
+  X0 --> RQ{是否补发?}
+  Xn --> RQ
+  RQ -->|否| TQ
+  RQ -->|是| Rn[拼 R{nn}<br/>R01..R99] --> TQ
+  TQ{是否重置过?<br/>v1.1 三轮新增}
+  TQ -->|否| Z[最终跟踪号]
+  TQ -->|是| Tn[拼 T{nn}<br/>T01..T99] --> Z
+  Z[最终跟踪号<br/>例: VIVAIA5839484942X01R01T02]
   style P1 fill:#dbeafe
   style P2 fill:#dbeafe
   style P3 fill:#fce7f3
+  style Tn fill:#fef3c7,stroke:#f59e0b
   style Z fill:#d1fae5,stroke:#10b981
     </div>
   </div>
@@ -452,11 +458,21 @@ flowchart TD
   </table>
   <blockquote class="info"><strong>配置项</strong>：后台需新建一张映射表 <code>shop_brand_prefix_mapping</code>（或在现有店铺配置上扩字段），运营可维护"Shopify 店铺 ID → 品牌前缀"。新接入的 Shopify 店铺必须先配置好前缀，否则不允许命中自建物流规则。</blockquote>
 
-  <h4>3.2.3 平台订单号</h4>
+  <h4>3.2.3 平台订单号（按店铺来源显式区分取数源）<span class="change-tag new">v1.1 三轮修订</span></h4>
+  <blockquote class="info"><strong>v1.1 三轮修订</strong>：原方案统一描述为"取 <code>platformOrderId</code>"，本轮改为<strong>按订单来源显式区分</strong>，避免 GALAXY/Shopify 实施时取错字段或取数语义不一致。</blockquote>
+  <table>
+    <thead><tr><th>订单来源</th><th>订单号取数源</th><th>字段说明</th></tr></thead>
+    <tbody>
+      <tr><td>GALAXY 国际站</td><td><code>Order.platformOrderId</code></td><td><strong>平台订单号</strong>——GALAXY 平台分配的订单 ID（数字串，长度上限 32 位）；直接整段使用</td></tr>
+      <tr><td>Shopify</td><td><code>Order.platformOrderId</code> 中的数字段</td><td>Shopify GID 形如 <code>gid://shopify/Order/4839xxx</code>，<strong>取末段数字</strong> <code>4839xxx</code>；后续清洗规则见 3.2.4</td></tr>
+    </tbody>
+  </table>
+  <p><strong>统一不取</strong>：</p>
   <ul>
-    <li><strong>数据来源</strong>：取 ERP 订单实体上的字段 <code>Order.platformOrderId</code>（"渠道中的订单 ID"，长度 32 位上限）</li>
-    <li><strong>不取</strong>：<code>platformOrderNumber</code>（含 <code>#</code> 等特殊字符）和 <code>orderNumber</code>（ERP 编码后单号，客户/客服无感）</li>
+    <li><code>platformOrderNumber</code>（含 <code>#</code> 等特殊字符，需要再做清洗，不如直接取 <code>platformOrderId</code>）</li>
+    <li><code>orderNumber</code>（ERP 内部编码后单号，客户/客服无感）</li>
   </ul>
+  <div class="alert alert-warn">⚠️ Shopify 取值如业务方倾向使用其他字段（如店铺侧"订单编号"），需联调前与运营/客服明确；本期暂沿用 <code>platformOrderId</code> 末段数字。</div>
 
   <h4>3.2.4 字符清洗</h4>
   <table>
@@ -470,37 +486,78 @@ flowchart TD
     </tbody>
   </table>
 
-  <h4>3.2.5 后缀</h4>
-  <p>后缀<strong>强制必带</strong>，按订单形态生成：</p>
+  <h4>3.2.5 后缀 <span class="change-tag new">v1.1 三轮：升级为三段 X{nn}[R{nn}][T{nn}]</span></h4>
+  <p>后缀格式总览：</p>
+  <pre><code>后缀 = X段（拆分位） + [R段（补发位）] + [T段（重置位）]</code></pre>
   <table>
-    <thead><tr><th>订单形态</th><th>后缀格式</th><th>样例</th></tr></thead>
+    <thead><tr><th>段</th><th>含义</th><th>出现条件</th><th>取值</th></tr></thead>
     <tbody>
-      <tr><td>原始单（不拆不补）</td><td><code>X00</code></td><td><code>VIVAIA5839484942X00</code></td></tr>
-      <tr><td>拆分单（第 N 子单）</td><td><code>X{nn}</code>，nn 两位补零 01..99</td><td><code>VIVAIA5839484942X01</code>、<code>...X02</code></td></tr>
-      <tr><td>补发主单（原单的第 N 次补发）</td><td><code>X00R{nn}</code>，nn 两位补零</td><td><code>VIVAIA5839484942X00R01</code></td></tr>
-      <tr><td>拆分子单又被补发</td><td><code>X{nn}R{nn}</code>，叠加无连字符</td><td><code>VIVAIA5839484942X01R01</code></td></tr>
-      <tr><td>补发的补发（罕见）</td><td>在所属拆分位（X00 或 X{nn}）上 R 序号累加</td><td><code>VIVAIA5839484942X00R02</code>、<code>VIVAIA5839484942X01R02</code></td></tr>
+      <tr><td><strong>X 段</strong></td><td>拆分序号</td><td><strong>强制必带</strong></td><td>原始单 / 补发主单 → <code>X00</code>；拆分子单 → <code>X01..X99</code></td></tr>
+      <tr><td><strong>R 段</strong></td><td>补发序号</td><td><strong>仅补发场景出现</strong></td><td>第 N 次补发 → <code>R{nn}</code>，01..99</td></tr>
+      <tr><td><strong>T 段</strong> <span class="change-tag new">三轮新增</span></td><td>重置序号</td><td><strong>仅订单被重置过出现</strong></td><td>第 N 次重置 → <code>T{nn}</code>，01..99；未重置不出现</td></tr>
     </tbody>
   </table>
+
+  <p><strong>完整后缀样例矩阵</strong>（前缀+订单号 = <code>VIVAIA5839484942</code>）：</p>
+  <table>
+    <thead><tr><th>订单形态</th><th>重置情况</th><th>后缀格式</th><th>样例</th></tr></thead>
+    <tbody>
+      <tr><td>原始单（不拆不补）</td><td>未重置</td><td><code>X00</code></td><td><code>VIVAIA5839484942X00</code></td></tr>
+      <tr><td>原始单</td><td>重置 1 次</td><td><code>X00T01</code></td><td><code>VIVAIA5839484942X00T01</code></td></tr>
+      <tr><td>原始单</td><td>重置 2 次</td><td><code>X00T02</code></td><td><code>VIVAIA5839484942X00T02</code></td></tr>
+      <tr><td>拆分子单（第 N 子单）</td><td>未重置</td><td><code>X{nn}</code></td><td><code>VIVAIA5839484942X01</code>、<code>...X02</code></td></tr>
+      <tr><td>拆分子单</td><td>重置 N 次</td><td><code>X{nn}T{mm}</code></td><td><code>VIVAIA5839484942X01T01</code></td></tr>
+      <tr><td>补发主单（原单第 N 次补发）</td><td>未重置</td><td><code>X00R{nn}</code></td><td><code>VIVAIA5839484942X00R01</code></td></tr>
+      <tr><td>补发主单</td><td>重置 N 次</td><td><code>X00R{nn}T{mm}</code></td><td><code>VIVAIA5839484942X00R01T01</code></td></tr>
+      <tr><td>拆分子单又被补发</td><td>未重置</td><td><code>X{nn}R{nn}</code></td><td><code>VIVAIA5839484942X01R01</code></td></tr>
+      <tr><td>拆分子单又被补发</td><td>重置 N 次</td><td><code>X{nn}R{nn}T{mm}</code></td><td><code>VIVAIA5839484942X01R01T02</code></td></tr>
+      <tr><td>补发的补发（罕见）</td><td>未重置</td><td>在所属拆分位上 R 序号累加</td><td><code>VIVAIA5839484942X00R02</code>、<code>...X01R02</code></td></tr>
+      <tr><td>补发的补发</td><td>重置 N 次</td><td>同上叠加 T 段</td><td><code>VIVAIA5839484942X00R02T01</code></td></tr>
+      <tr><td>拆分再拆分（罕见）</td><td>未重置</td><td colspan="2">见下方"拆分再拆分"说明</td></tr>
+    </tbody>
+  </table>
+
   <blockquote class="info"><strong>设计要点</strong>：<br>
-    • 序号采用 <strong>2 位补零</strong>（X01~X99 / R01~R99），业务上拆分/补发不超过 99 单，足够；<br>
-    • 原始单也带 X00 后缀，保持所有跟踪号"必有后缀"的统一格式，便于后端解析；<br>
-    • 拆分子单的补发<strong>叠加 R 后缀</strong>而非生成新订单跟踪号——保留"这是哪条拆分子单的补发"信息。
+    • 序号采用 <strong>2 位补零</strong>（X01..X99 / R01..R99 / T01..T99），业务上拆分/补发/重置均不超过 99 次，足够；<br>
+    • 原始单也带 X00 后缀，保持所有跟踪号"必有 X 段"的统一格式，便于后端解析；<br>
+    • 拆分子单的补发<strong>叠加 R 后缀</strong>而非生成新订单跟踪号——保留"这是哪条拆分子单的补发"信息；<br>
+    • <strong>T 段仅在重置过的订单上出现</strong>——未重置的订单跟踪号不带 T，避免对绝大多数订单平添长度负担；从有无 T 段即可"一眼看出是否被重置过及次数"；<br>
+    • <strong>拆分再拆分</strong>：业务上不在跟踪号 X 段做嵌套，而是通过订单层面的"拆分链路"维护，跟踪号取<strong>最终生效拆分位</strong>对应的 X{nn}（即把原拆分子单视为"父单"，二次拆分后的新子单取自己的 X 序号，并在数据模型中通过 <code>virtual_order_id</code> 链路追溯）。如业务确有需求把多层拆分编进跟踪号，再升级规则。
   </blockquote>
+
+  <div id="sec-3-2-5-1">
+  <h4>3.2.5.1 订单重置的业务定义 <span class="change-tag new">v1.1 三轮新增</span></h4>
+  <p><strong>订单重置</strong>：在已分配自建物流但<strong>未出库</strong>的窗口期，运营/业务在订单管理后台对订单执行"重置物流"动作。重置流程：</p>
+  <ol>
+    <li>现有自建跟踪号映射置为 <code>RESET</code> 状态（不可复用、不可被任何接口/查询命中）</li>
+    <li>调易抵达"作废运单"接口（如已取号成功）</li>
+    <li><strong><code>reset_seq</code> 序号 +1</strong>，按 §3.2.5 规则重新生成新跟踪号（带新的 T{nn} 段）</li>
+    <li>重新执行 §4.1 流程：取号 + 取面单 + 建立新映射</li>
+    <li>触发销售平台回传<strong>新跟踪号</strong>（覆盖旧号）</li>
+  </ol>
+  <p><strong>触发场景示例</strong>：</p>
+  <ul>
+    <li>客户改地址需重新分单</li>
+    <li>规则误命中需切换到其他物流商再切回</li>
+    <li>易抵达取号成功但面单异常需要重出</li>
+  </ul>
+  <div class="alert alert-warn">⚠️ <strong>已出库订单不可重置</strong>——已贴面单出库后只能走"快速换单"（见 §4.8.3）。</div>
+  </div>
 
   <h4>3.2.6 唯一性保证</h4>
   <ul>
     <li>一个<strong>包裹</strong>对应一个<strong>订单</strong>（含拆分子单 / 补发单），1:1 关系；不同订单跟踪号必然不同</li>
-    <li>"平台订单号 + 后缀"在<strong>同一来源</strong>内由平台 + ERP 联合保证唯一</li>
+    <li>"<strong>平台订单号 + X 段 + R 段 + T 段</strong>"在<strong>同一来源</strong>内由平台 + ERP 联合保证唯一</li>
+    <li><strong>重置场景</strong> <span class="change-tag new">v1.1 三轮新增</span>：订单每次重置 <code>reset_seq</code> +1，T 段递增（T01 → T02 → ...），新跟踪号在系统中<strong>全局唯一</strong>；旧跟踪号映射置为 <code>RESET</code> 状态，永不复用、永不命中查询</li>
     <li><strong>残余风险（接受）</strong>：GALAXY 与 Shopify 跨来源极端情况下平台订单 ID 可能数字相同 → 跟踪号撞号；本期评估概率极低，<strong>暂不加来源码兜底</strong>，由后续监控 + 入库唯一性约束兜底</li>
   </ul>
 
   <h4>3.2.7 字符集与长度</h4>
   <ul>
     <li><strong>字符集</strong>：<code>[A-Z0-9]</code> 大写字母 + 数字</li>
-    <li><strong>典型长度</strong>：19~28 位（Shopify GID 通常 10~15 位，加品牌+后缀）</li>
-    <li><strong>极端上限</strong>：<code>VIVAIA(6) + 平台订单号(32) + X00R99(6) = 44</code> 位</li>
-    <li><strong>风险</strong>：超过部分销售平台 tracking number 字段长度限制（一般 35 位）。研发联调时需核实易抵达和销售平台对长度的实际接受范围；如确实超限，可对清洗后平台订单号做"末尾保留 N 位 + 头部哈希"的截断兜底（兜底方案在本期不实现，先做监控告警）</li>
+    <li><strong>典型长度</strong>：19~28 位（Shopify GID 通常 10~15 位，加品牌+后缀；未重置场景）</li>
+    <li><strong>极端上限</strong>：<code>VIVAIA(6) + 平台订单号(32) + X{nn}R{nn}T{nn}(9) = 47</code> 位 <span class="change-tag new">v1.1 三轮：增加 T 段后由 44 → 47</span></li>
+    <li><strong>风险</strong>：超过部分销售平台 tracking number 字段长度限制（一般 35 位）。研发联调时需核实易抵达和销售平台对长度的实际接受范围；如确实超限，可对清洗后平台订单号做"末尾保留 N 位 + 头部哈希"的截断兜底（兜底方案在本期不实现，先做监控告警）。<strong>重置 3 次以上的极端订单（T03+）极少见</strong>，重点关注监控告警即可</li>
   </ul>
 
   <h4>3.2.8 生成时机</h4>
@@ -515,6 +572,8 @@ flowchart TD
       <tr><td>拆分子单</td><td>Shopify</td><td>FANKA</td><td><code>1001</code></td><td><code>FANKA1001X01</code>、<code>FANKA1001X02</code></td></tr>
       <tr><td>补发单</td><td>Shopify</td><td>VIVAIA</td><td><code>1001</code></td><td><code>VIVAIA1001X00R01</code></td></tr>
       <tr><td>拆分+补发</td><td>GALAXY</td><td>—</td><td><code>5839</code></td><td><code>VIVAIA5839X02R01</code></td></tr>
+      <tr><td>原始单（重置 1 次）<span class="change-tag new">三轮</span></td><td>GALAXY</td><td>—</td><td><code>5839484942</code></td><td><code>VIVAIA5839484942X00T01</code></td></tr>
+      <tr><td>拆分+补发+重置<span class="change-tag new">三轮</span></td><td>Shopify</td><td>VIVAIA</td><td><code>1001</code></td><td><code>VIVAIA1001X01R01T02</code></td></tr>
     </tbody>
   </table>
   </div>
@@ -664,6 +723,7 @@ flowchart TD
       <tr><td>D</td><td>轨迹长时间无更新 → <strong>触发节点时效预警</strong>（复用现有预警产品）</td><td>自建物流商作为预警维度的一种</td></tr>
       <tr><td>E</td><td>订单取消 → <strong>调易抵达作废接口</strong> + ERP 自建号作废</td><td>已签收订单不可作废，走退款链路</td></tr>
       <tr><td>F</td><td>自建跟踪号生成时唯一性冲突（极端） → <strong>入库前查重，命中冲突则报错告警</strong>，由人工核查</td><td>残余风险兜底，详见 §3.2.6</td></tr>
+      <tr><td>G <span class="change-tag new">v1.1 三轮新增</span></td><td><strong>订单重置（未出库窗口期）</strong> → 旧自建号置 <code>RESET</code> + 调易抵达作废 + <code>reset_seq</code>+1 + 重新生成带 T{nn} 的新号 + 取号取面单 + 触发销售平台回传新号覆盖旧号</td><td>已出库订单不可重置，走快速换单 §4.8.3；详见 §3.2.5.1</td></tr>
     </tbody>
   </table>
   </div>
@@ -783,19 +843,20 @@ flowchart TD
       <tr><td><code>suffix_type</code></td><td>varchar(16)</td><td><code>ORIGINAL</code> / <code>SPLIT</code> / <code>REISSUE</code> / <code>SPLIT_REISSUE</code></td></tr>
       <tr><td><code>split_seq</code></td><td>tinyint</td><td>拆分序号（原始单/补发主单为 0；X01..X99）</td></tr>
       <tr><td><code>reissue_seq</code></td><td>tinyint</td><td>补发序号（无补发为 0；R01..R99）</td></tr>
+      <tr style="background:#fef3c7;"><td><code>reset_seq</code> <span class="change-tag new">v1.1 三轮新增</span></td><td>tinyint</td><td>重置序号（未重置为 0；T01..T99）。每次订单重置 +1，新跟踪号 T 段从此字段格式化得到</td></tr>
       <tr><td><code>virtual_order_id</code></td><td>bigint</td><td>关联虚拟订单</td></tr>
       <tr><td><code>package_number</code></td><td>varchar(64)</td><td>仓库包裹号（一对一）</td></tr>
       <tr><td><code>provider_code</code></td><td>varchar(32)</td><td>实际承运服务商代码（如 yidida）</td></tr>
       <tr><td><code>provider_tracking_no</code></td><td>varchar(64)</td><td>易抵达运单号（取号成功后回填）</td></tr>
       <tr><td><code>face_sheet_url</code></td><td>varchar(255)</td><td>面单 PDF URL（缓存后回填）</td></tr>
-      <tr><td><code>status</code></td><td>varchar(16)</td><td><code>PENDING_PROVIDER</code> / <code>MAPPED</code> / <code>CANCELED</code></td></tr>
+      <tr><td><code>status</code></td><td>varchar(16)</td><td><code>PENDING_PROVIDER</code> / <code>MAPPED</code> / <code>CANCELED</code> / <code>RESET</code> <span class="change-tag new">三轮新增 RESET</span>（旧号被重置后置此态，永不复用、永不命中查询）</td></tr>
       <tr><td><code>created_at</code> / <code>updated_at</code></td><td>datetime</td><td>时间戳</td></tr>
     </tbody>
   </table>
   <p><strong>索引</strong>：</p>
   <ul>
     <li>主键：<code>self_built_tracking_no</code></li>
-    <li>唯一索引：<code>(brand_prefix, platform_order_id_clean, suffix_type, split_seq, reissue_seq)</code> —— 业务唯一性的入库强校验</li>
+    <li>唯一索引：<code>(brand_prefix, platform_order_id_clean, suffix_type, split_seq, reissue_seq, reset_seq)</code> <span class="change-tag new">v1.1 三轮：补充 reset_seq 维度</span>—— 业务唯一性的入库强校验，保证旧号永不复用</li>
     <li>普通索引：<code>virtual_order_id</code>、<code>package_number</code>、<code>provider_tracking_no</code></li>
   </ul>
   <blockquote class="info"><strong>为什么不直接扩 <code>VirtualOrder</code> 字段</strong>：<code>VirtualOrder</code> 是订单维度，自建跟踪号是包裹维度（一拆分子单/补发单 = 一包裹），用单独映射表更干净；同时把后缀分量拆字段存便于检索和回溯。</blockquote>
