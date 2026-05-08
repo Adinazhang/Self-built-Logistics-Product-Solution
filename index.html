@@ -361,6 +361,7 @@
     <div class="mermaid">
 flowchart LR
   Customer[👤 客户] -->|查询轨迹| Track[track.vivaia.com]
+  Customer -->|或用自建跟踪号<br/>外部查询| TT17[17track]
   Customer -->|看到的<br/>跟踪号| Platform[销售平台<br/>GALAXY/Shopify]
   Platform -->|回传 carrier=自建物流<br/>tracking=自建跟踪号| ERP
   ERP[ERP 系统<br/>自建物流虚拟商] -->|对内映射| Yidida[易抵达<br/>第三方履约]
@@ -368,10 +369,12 @@ flowchart LR
   Yidida -->|尾程| T[本地派送]
   Yidida -->|完整轨迹| ERP
   ERP --> Track
+  ERP -->|轨迹推送<br/>绑定自建跟踪号| TT17
   style Customer fill:#fef3c7,stroke:#f59e0b
   style ERP fill:#dbeafe,stroke:#3b82f6
   style Yidida fill:#e0e7ff,stroke:#6366f1
   style Platform fill:#fce7f3,stroke:#ec4899
+  style TT17 fill:#d1fae5,stroke:#10b981
     </div>
   </div>
 </section>
@@ -385,6 +388,7 @@ flowchart LR
       <tr><td>销售渠道</td><td><strong>GALAXY 国际站、Shopify</strong>（其他渠道，如 TikTok，不在本期）</td></tr>
       <tr><td>发货仓</td><td><strong>东莞仓</strong>（其他仓不在本期）</td></tr>
       <tr><td>订单范围</td><td><strong>新订单</strong>（上线后创建的订单），按规则引擎匹配命中后才走自建物流</td></tr>
+      <tr style="background:#d1fae5;"><td>外部系统对接 <span class="change-tag new">本期新增</span></td><td><strong>17track</strong>：将易抵达回传到 ERP 的完整轨迹同步推送至 17track，绑定到自建跟踪号上；用户可在 17track 上直接用自建跟踪号查到对应轨迹（详见 §4.4 轨迹同步消费方扩展）</td></tr>
       <tr><td>不在范围</td><td>老订单不动；老订单原物流方案继续走完履约</td></tr>
     </tbody>
   </table>
@@ -405,6 +409,7 @@ flowchart LR
       <tr><td><strong>面单</strong></td><td>易抵达提供的物流面单（PDF/URL）；仓库实际贴在包裹上的就是这张</td></tr>
       <tr><td><strong>轨迹</strong></td><td>易抵达整合头程 + 尾程后回给 ERP 的完整履约轨迹</td></tr>
       <tr><td><code>track.vivaia.com</code></td><td>现有客户侧轨迹查询站点；客户输入"销售平台订单号 + 自建跟踪号"查询</td></tr>
+      <tr><td><strong>17track</strong> <span class="change-tag new">本期新增</span></td><td>第三方全球物流轨迹聚合查询平台；ERP 将易抵达回传的完整轨迹推送至 17track 并绑定到自建跟踪号，用户可在 17track 上直接用自建跟踪号查询轨迹</td></tr>
       <tr><td><strong>拆分单</strong></td><td>ERP 把一个订单拆成多个独立子订单分别发货，每个子订单一个独立包裹</td></tr>
       <tr><td><strong>补发单</strong></td><td>ERP 为售后场景生成的独立补发订单，带 <code>isReissued</code> 标记 + <code>parentReissueVirtualOrderNo</code> 关联父单</td></tr>
     </tbody>
@@ -677,8 +682,10 @@ flowchart TD
   D --> E[写入 ERP 轨迹表<br/>按自建跟踪号索引]
   E --> F1[消费方 1<br/>track.vivaia.com 查询]
   E --> F2[消费方 2<br/>节点时效预警]
+  E --> F3[消费方 3<br/>推送 17track<br/>绑定自建跟踪号]
   style A fill:#dbeafe,stroke:#3b82f6
   style E fill:#d1fae5,stroke:#10b981
+  style F3 fill:#d1fae5,stroke:#10b981
     </div>
   </div>
   </div>
@@ -710,12 +717,14 @@ flowchart TD
 flowchart TD
   A[订单取消事件<br/>已分配自建物流但未签收] --> B[ERP 调易抵达<br/>作废运单 接口]
   B --> C[易抵达回执]
-  C --> D[ERP 自建号置为 作废]
+  C --> D[ERP 自建号保留绑定原订单<br/>状态不变 MAPPED 或 PENDING_PROVIDER<br/>不作废、不复用]
   D --> E[通知销售平台撤回<br/>退款流程沿用现有]
   style A fill:#fef3c7
+  style D fill:#e0e7ff,stroke:#6366f1
   style E fill:#d1fae5,stroke:#10b981
     </div>
   </div>
+  <blockquote class="info"><strong>说明（自建号在订单取消后的处理）</strong>：订单取消后，自建跟踪号<strong>不</strong>置为 <code>CANCELED</code>，而是<strong>原样停留在已取消订单上</strong>。它只对该订单有效、不会被任何机制回收复用为新订单的跟踪号（跟踪号生成走 §3.2 计数器+散列+Luhn 流程，本身不存在"复用"通道）。这样做的好处：① 客户/客服在取消后仍可凭旧自建号查到完整历史轨迹；② 避免与"<code>CANCELED</code>=快速换出后失效"语义冲突——<code>CANCELED</code> 仅在 §4.8.3 换出场景使用，<code>RESET</code> 仅在 §3.2.5.1 订单重置场景使用，订单取消不属于这两类。</blockquote>
   </div>
 
   <div id="sec-4-7">
@@ -727,7 +736,7 @@ flowchart TD
       <tr><td>B</td><td>自建号已生成但易抵达迟未回 → <strong>设 SLA 时长（建议 2 小时）</strong>，超时告警人工干预</td><td>告警渠道沿用现有运维体系</td></tr>
       <tr><td>C</td><td>面单获取失败 → <strong>仓库出库时实时再拉一次</strong>（懒加载兜底）</td><td>二次拉仍失败则阻塞出库 + 告警</td></tr>
       <tr><td>D</td><td>轨迹长时间无更新 → <strong>触发节点时效预警</strong>（复用现有预警产品）</td><td>自建物流商作为预警维度的一种</td></tr>
-      <tr><td>E</td><td>订单取消 → <strong>调易抵达作废接口</strong> + ERP 自建号作废</td><td>已签收订单不可作废，走退款链路</td></tr>
+      <tr><td>E</td><td>订单取消 → <strong>调易抵达作废接口</strong>；ERP 自建号<strong>保留绑定原订单、不作废、不复用</strong>（详见 §4.6）</td><td>已签收订单不可作废，走退款链路</td></tr>
       <tr><td>F</td><td>自建跟踪号生成时唯一性冲突（极端） → <strong>入库前查重，命中冲突则报错告警</strong>，由人工核查</td><td>残余风险兜底，详见 §3.2.6</td></tr>
       <tr><td>G <span class="change-tag">v1.2 重写</span></td><td><strong>订单重置（未出库窗口期）</strong> → 旧自建号置 <code>RESET</code> + 调易抵达作废 + <code>reset_seq</code>+1 + 按 §3.2.1 重新取一个新散列序号生成全新跟踪号 + 取号取面单 + 触发销售平台回传新号覆盖旧号</td><td>已出库订单不可重置，走快速换单 §4.8.3；详见 §3.2.5.1</td></tr>
     </tbody>
@@ -783,7 +792,7 @@ flowchart TD
   <p><strong>现状</strong>（<code>PackageManagerServiceImpl.java:121</code> <code>regeneratePackageTrackingNumber</code>）：仓库快速换单流程 = 扫包裹 → 选新物流商/渠道 → 调取号 → 替换包裹的 trackingNumber。当前实现没有自建物流分支。</p>
 
   <div class="flow-card">
-    <div class="flow-card-title">快速换单 - 三种自建场景</div>
+    <div class="flow-card-title">快速换单 - 两种自建场景</div>
     <div class="mermaid">
 flowchart TD
   Start[仓库快速换单<br/>扫包裹 → 选新物流商] --> Branch{自建物流场景判断}
@@ -795,20 +804,16 @@ flowchart TD
   I1 --> I2[② 按 §3.2 取新散列序号<br/>生成全新自建跟踪号]
   I2 --> I3[③ 调易抵达取号 + 取面单]
   I3 --> I4[④ 触发销售平台回传]
-  Branch -->|换内: 自建→自建<br/>仅换易抵达渠道| N1[① 保留旧自建跟踪号不变<br/>对外承诺不变]
-  N1 --> N2[② 调易抵达 with 新渠道<br/>取新易抵达运单号]
-  N2 --> N3[③ 自建映射表更新<br/>provider_tracking_no + face_sheet_url]
-  N3 --> N4[④ 不触发销售平台回传<br/>自建号未变]
   style O4 fill:#fee2e2
   style I4 fill:#fef3c7
-  style N4 fill:#d1fae5
     </div>
   </div>
+  <blockquote class="info"><strong>说明</strong>：原 v1.1 中"换内：自建→自建（仅换易抵达渠道）"场景已删除——只要触发快速换单，自建跟踪号、易抵达运单号、易抵达面单三者都会变更，不存在"保留旧自建号仅替换底层渠道"的中间形态。任何"自建→自建"实际等价于一次"换出+换入"，按上述两种分支处理。</blockquote>
 
   <p><strong>仓库改动</strong>：</p>
   <ol>
-    <li><code>regeneratePackageTrackingNumber</code> 服务增加自建物流分支判断（按新旧物流商类型路由 3 种处理逻辑）</li>
-    <li>出参 <code>RegeneratePackageTrackingNumberResponse</code> 需要在换内场景下能区分"自建号未变"，告知调用方不要重复回传销售平台</li>
+    <li><code>regeneratePackageTrackingNumber</code> 服务增加自建物流分支判断（按新旧物流商类型路由 2 种处理逻辑：换出 / 换入）</li>
+    <li>任何快速换单（包括"自建→自建"重换易抵达渠道）一律走"换出 + 换入"组合：旧自建号置 CANCELED，按 §3.2 重新生成全新自建跟踪号，触发销售平台回传</li>
     <li>退件后的换单（<code>PackageRejectController</code>）走同一逻辑，本期不做差异化</li>
   </ol>
 
@@ -858,7 +863,7 @@ flowchart TD
       <tr><td><code>provider_code</code></td><td>varchar(32)</td><td>实际承运服务商代码（如 yidida）</td></tr>
       <tr><td><code>provider_tracking_no</code></td><td>varchar(64)</td><td>易抵达运单号（取号成功后回填）</td></tr>
       <tr><td><code>face_sheet_url</code></td><td>varchar(255)</td><td>面单 PDF URL（缓存后回填）</td></tr>
-      <tr><td><code>status</code></td><td>varchar(16)</td><td><code>PENDING_PROVIDER</code> / <code>MAPPED</code> / <code>CANCELED</code> / <code>RESET</code></td></tr>
+      <tr><td><code>status</code></td><td>varchar(16)</td><td><code>PENDING_PROVIDER</code>（已生成自建号、易抵达取号未完成） / <code>MAPPED</code>（已映射易抵达号，正常履约） / <code>CANCELED</code>（仅 §4.8.3 快速换出场景使用） / <code>RESET</code>（仅 §3.2.5.1 订单重置场景使用）。<strong>订单取消不变更此状态，自建号保留 <code>MAPPED</code> / <code>PENDING_PROVIDER</code> 原状停留在已取消订单上</strong>（详见 §4.6）</td></tr>
       <tr><td><code>created_at</code> / <code>updated_at</code></td><td>datetime</td><td>时间戳</td></tr>
     </tbody>
   </table>
@@ -999,7 +1004,7 @@ flowchart TD
       <tr><td><code>PackageMapper.findByTrackingNumberOrPackageNumber</code></td><td>查询条件追加 <code>provider_tracking_number</code> 命中分支，支持仓库扫面单（易抵达号）反查包裹</td></tr>
       <tr><td><code>TrackingNumberUtil.specialConversion</code></td><td>入口加白名单短路：以自建品牌前缀（VIVAIA / FANKA / 配置项中的其他前缀）开头的跟踪号直接返回原值，不做截断</td></tr>
       <tr><td><code>DelivereServiceImpl</code> 核重发货</td><td>校验逻辑无需改（订单和包裹的 trackingNumber 都存自建号即可），但需要面单打印逻辑改为取 <code>providerTrackingNumber</code></td></tr>
-      <tr><td><code>PackageManagerServiceImpl.regeneratePackageTrackingNumber</code> 快速换单</td><td>增加自建物流分支：换出（作废易抵达号 + 自建号置 CANCELED）/ 换入（生成自建号 + 取易抵达号）/ 换内（保留自建号 + 换易抵达号），详见 §4.8.3</td></tr>
+      <tr><td><code>PackageManagerServiceImpl.regeneratePackageTrackingNumber</code> 快速换单</td><td>增加自建物流分支：换出（作废易抵达号 + 自建号置 CANCELED）/ 换入（生成全新自建号 + 取易抵达号），详见 §4.8.3</td></tr>
       <tr><td><code>PackageRejectController</code> 退件换单</td><td>与上同源（共用 <code>regeneratePackageTrackingNumber</code>），本期不做差异化</td></tr>
     </tbody>
   </table>
@@ -1078,7 +1083,7 @@ flowchart LR
       <tr style="background:#fee2e2;"><td><span class="change-tag">v1.2 新增</span> Luhn 校验位实现错误导致漏拦截或误拦截</td><td>引入业内成熟的 Luhn 库（不要自己重写）；上线前用至少 100 组正负样本回归</td></tr>
       <tr><td><span class="change-tag">v1.1 二轮新增</span> 核重发货跟踪号不一致校验失败</td><td>严格遵守 §5.2.1 存储约定：订单和包裹的 <code>trackingNumber</code> 字段都存自建号；面单上打印的易抵达号存到 <code>Package.providerTrackingNumber</code>。上线前用真实样本跑一遍核重流程做回归</td></tr>
       <tr><td><span class="change-tag">v1.1 二轮新增</span> specialConversion 截断片段误匹配</td><td>在 <code>TrackingNumberUtil.specialConversion</code> 入口对自建品牌前缀加白名单短路；上线前回归测试 fedex / 行运易 / 乐天等承运商的截断匹配是否仍正常</td></tr>
-      <tr><td><span class="change-tag">v1.1 二轮新增</span> 快速换单的换内场景未识别，重复回传销售平台</td><td><code>regeneratePackageTrackingNumber</code> 出参带"自建号是否变更"标志，调用方据此决定是否回传销售平台；上线前回归换出/换入/换内 3 种场景</td></tr>
+      <tr><td><span class="change-tag">v1.1 二轮新增</span> 快速换单分支识别错误，遗漏销售平台回传</td><td>简化为换出 / 换入两种自建分支（v1.2 取消"换内"中间形态——任何快速换单都重新生成自建号）；上线前回归换出 / 换入两种场景与销售平台回传链路</td></tr>
     </tbody>
   </table>
 </section>
